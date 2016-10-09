@@ -1,0 +1,1 @@
+Icon source: https://www.iconfinder.com/icons/532626/arrow_arrow_up_interest_percentage_sign_icon#size=512

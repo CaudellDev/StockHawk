@@ -38,6 +38,7 @@ public class StockTaskService extends GcmTaskService{
   public StockTaskService(Context context){
     mContext = context;
   }
+
   String fetchData(String url) throws IOException{
     Request request = new Request.Builder()
         .url(url)
@@ -113,6 +114,10 @@ public class StockTaskService extends GcmTaskService{
       try{
         getResponse = fetchData(urlString);
         result = GcmNetworkManager.RESULT_SUCCESS;
+
+          Log.i(LOG_TAG, "URL: " + urlString);
+          Log.i(LOG_TAG, "Get Response: " + getResponse);
+
         try {
           ContentValues contentValues = new ContentValues();
           // update ISCURRENT to 0 (false) so new data is current
