@@ -8,6 +8,5 @@ import android.view.View;
  * Interface to enable swipe to delete
  */
 public interface ItemTouchHelperAdapter {
-
-  void onItemDismiss(int position);
+    void onItemDismiss(int position);
 }
