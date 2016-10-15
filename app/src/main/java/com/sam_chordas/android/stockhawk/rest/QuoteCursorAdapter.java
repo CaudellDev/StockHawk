@@ -5,7 +5,9 @@ import android.database.Cursor;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.os.Build;
+import android.support.design.widget.Snackbar;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -25,9 +27,15 @@ import com.sam_chordas.android.stockhawk.touch_helper.ItemTouchHelperViewHolder;
  */
 public class QuoteCursorAdapter extends CursorRecyclerViewAdapter<QuoteCursorAdapter.ViewHolder> implements ItemTouchHelperAdapter {
 
+    private static final String LOG_TAG = QuoteCursorAdapter.class.getSimpleName();
+
     private static Context mContext;
     private static Typeface robotoLight;
     private boolean isPercent;
+
+    private String deletedSymbol;
+    private int deletedSymbolPos;
+    private View parent;
 
     public QuoteCursorAdapter(Context context, Cursor cursor) {
         super(context, cursor);
@@ -71,13 +79,27 @@ public class QuoteCursorAdapter extends CursorRecyclerViewAdapter<QuoteCursorAda
         }
     }
 
-    @Override public void onItemDismiss(int position) {
+    @Override public void onItemDismiss(int position, RecyclerView rv) {
         Cursor c = getCursor();
         c.moveToPosition(position);
         String symbol = c.getString(c.getColumnIndex(QuoteColumns.SYMBOL));
+
         mContext.getContentResolver().delete(QuoteProvider.Quotes.withSymbol(symbol), null, null);
 
         // Snackbar for undo
+        deletedSymbol = symbol;
+        deletedSymbolPos = position;
+
+
+        Snackbar snackbar = Snackbar.make(rv, "You deleted " + symbol + ".", Snackbar.LENGTH_LONG)
+                                    .setAction("UNDO", new View.OnClickListener() {
+                                        @Override
+                                        public void onClick(View v) {
+                                            Log.d(LOG_TAG, "Snackbar callback function - UNDO button clicked.");
+                                        }
+                                    });
+
+        snackbar.show();
 
         notifyItemRemoved(position);
     }
