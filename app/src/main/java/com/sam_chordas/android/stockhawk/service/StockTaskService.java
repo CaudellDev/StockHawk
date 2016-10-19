@@ -12,6 +12,7 @@ import com.google.android.gms.gcm.GcmTaskService;
 import com.google.android.gms.gcm.TaskParams;
 import com.sam_chordas.android.stockhawk.data.QuoteColumns;
 import com.sam_chordas.android.stockhawk.data.QuoteProvider;
+import com.sam_chordas.android.stockhawk.rest.QuoteCursorAdapter;
 import com.sam_chordas.android.stockhawk.rest.Utils;
 import com.squareup.okhttp.OkHttpClient;
 import com.squareup.okhttp.Request;
@@ -28,6 +29,11 @@ import java.net.URLEncoder;
 public class StockTaskService extends GcmTaskService {
 
     private String LOG_TAG = StockTaskService.class.getSimpleName();
+
+    public static final String DETAIL_SYMBOL = "detail_symbol";
+    public static final String TAG_EXTRA = "tag";
+    public static final String ADD_EXTRA = "add";
+    public static final String SYMBOL_EXTRA = "symbol";
 
     private OkHttpClient client = new OkHttpClient();
     private Context mContext;
@@ -98,6 +104,8 @@ public class StockTaskService extends GcmTaskService {
                 }
             }
         } else if (params.getTag().equals("add")) {
+            // TODO: Check for the position param in here?
+
             isUpdate = false;
             // get symbol from params.getExtra and build query
             String stockInput = params.getExtras().getString("symbol");
@@ -106,6 +114,10 @@ public class StockTaskService extends GcmTaskService {
             } catch (UnsupportedEncodingException e) {
                 e.printStackTrace();
             }
+        } else if (params.getTag().equals("bulk")) {
+
+        } else if (params.getTag().equals("detail")) {
+
         }
         // finalize the URL for the API query.
         urlStringBuilder.append("&format=json&diagnostics=true&env=store%3A%2F%2Fdatatables." + "org%2Falltableswithkeys&callback=");

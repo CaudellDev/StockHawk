@@ -8,7 +8,9 @@ import android.content.Loader;
 import android.database.Cursor;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.net.NetworkRequest;
 import android.support.design.widget.FloatingActionButton;
+import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.app.ActionBar;
 import android.os.Bundle;
@@ -16,10 +18,12 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.helper.ItemTouchHelper;
 import android.text.InputType;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Button;
 import android.widget.Toast;
 import com.afollestad.materialdialogs.MaterialDialog;
 import com.sam_chordas.android.stockhawk.R;
@@ -36,6 +40,9 @@ import com.google.android.gms.gcm.Task;
 import com.sam_chordas.android.stockhawk.touch_helper.SimpleItemTouchHelperCallback;
 
 public class MyStocksActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor> {
+
+    private static final String LOG_TAG = MyStocksActivity.class.getSimpleName();
+
     /**
      * Fragment managing the behaviors, interactions and presentation of the navigation drawer.
      */
@@ -52,16 +59,16 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
     private Cursor mCursor;
     boolean isConnected;
 
+    private RecyclerView mRecyclerView;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         mContext = this;
-        ConnectivityManager cm =
-        (ConnectivityManager) mContext.getSystemService(Context.CONNECTIVITY_SERVICE);
+        ConnectivityManager cm = (ConnectivityManager) mContext.getSystemService(Context.CONNECTIVITY_SERVICE);
 
         NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
-        isConnected = activeNetwork != null &&
-        activeNetwork.isConnectedOrConnecting();
+        isConnected = activeNetwork != null && activeNetwork.isConnectedOrConnecting();
         setContentView(R.layout.activity_my_stocks);
         // The intent service is for executing immediate pulls from the Yahoo API
         // GCMTaskService can only schedule tasks, they cannot execute immediately
@@ -73,17 +80,18 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
                 startService(mServiceIntent);
             } else {
                 // Empty view visible code here
-                networkToast();
+                noNetworkView();
+                noNetworkToast();
             }
         }
 
-        RecyclerView recyclerView = (RecyclerView) findViewById(R.id.recycler_view);
-        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        mRecyclerView = (RecyclerView) findViewById(R.id.recycler_view);
+        mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
         getLoaderManager().initLoader(CURSOR_LOADER_ID, null, this);
 
         mCursorAdapter = new QuoteCursorAdapter(this, null);
 
-        recyclerView.addOnItemTouchListener(new RecyclerViewItemClickListener(this,
+        mRecyclerView.addOnItemTouchListener(new RecyclerViewItemClickListener(this,
             new RecyclerViewItemClickListener.OnItemClickListener() {
                 @Override public void onItemClick(View v, int position) {
                     //TODO:
@@ -91,7 +99,7 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
                 }
             }));
 
-        recyclerView.setAdapter(mCursorAdapter);
+        mRecyclerView.setAdapter(mCursorAdapter);
 
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
@@ -127,15 +135,15 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
                     .show();
                 } else {
                     // Empty view code here
-                    networkToast();
+                    noNetworkToast();
                 }
 
             }
         });
 
-        ItemTouchHelper.Callback callback = new SimpleItemTouchHelperCallback(mCursorAdapter, recyclerView);
+        ItemTouchHelper.Callback callback = new SimpleItemTouchHelperCallback(mCursorAdapter, mRecyclerView);
         mItemTouchHelper = new ItemTouchHelper(callback);
-        mItemTouchHelper.attachToRecyclerView(recyclerView);
+        mItemTouchHelper.attachToRecyclerView(mRecyclerView);
 
         mTitle = getTitle();
         if (isConnected) {
@@ -167,8 +175,45 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
         getLoaderManager().restartLoader(CURSOR_LOADER_ID, null, this);
     }
 
-    public void networkToast(){
-        Toast.makeText(mContext, getString(R.string.network_toast), Toast.LENGTH_SHORT).show();
+    public void noNetworkView() {
+        if (mRecyclerView == null) mRecyclerView = (RecyclerView) findViewById(R.id.recycler_view);
+        View emptyView = findViewById(R.id.recycler_empty_view);
+        Button retryBtn = (Button) findViewById(R.id.recycler_empty_retry_btn);
+
+        mRecyclerView.setVisibility(View.GONE);
+        emptyView.setVisibility(View.VISIBLE);
+
+        retryBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                ConnectivityManager cm = (ConnectivityManager) mContext.getSystemService(Context.CONNECTIVITY_SERVICE);
+
+                NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
+                isConnected = activeNetwork != null && activeNetwork.isConnectedOrConnecting();
+
+                View coord_view = findViewById(R.id.stock_activity_coord_layout);
+                if (isConnected) {
+                    connectedNetworkView();
+                    if (coord_view != null) Snackbar.make(coord_view, "Network connection found!", Snackbar.LENGTH_SHORT).show();
+                    else Log.e(LOG_TAG, "(Is Connected) Coordinator View is null! Oh no! :(");
+                } else {
+                    if (coord_view != null) Snackbar.make(coord_view, "No Network Connection found. Please try again.", Snackbar.LENGTH_SHORT).show();
+                    else Log.e(LOG_TAG, "(Not Connected) Coordinator View is null! Oh no! :(");
+                }
+            }
+        });
+    }
+
+    public void connectedNetworkView() {
+        if (mRecyclerView == null) mRecyclerView = (RecyclerView) findViewById(R.id.recycler_view);
+        View emptyView = findViewById(R.id.recycler_empty_view);
+
+        emptyView.setVisibility(View.GONE);
+        mRecyclerView.setVisibility(View.VISIBLE);
+    }
+
+    public void noNetworkToast(){
+        Snackbar.make(mRecyclerView, getString(R.string.network_toast), Snackbar.LENGTH_SHORT).show();
     }
 
     public void restoreActionBar() {

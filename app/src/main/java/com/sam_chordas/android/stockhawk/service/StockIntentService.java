@@ -13,8 +13,6 @@ public class StockIntentService extends IntentService {
 
     private static final String LOG_TAG = StockIntentService.class.getSimpleName();
 
-    public static final String DETAIL_SYMBOL = "detail_symbol";
-
     public StockIntentService(){
     super(StockIntentService.class.getName());
     }
@@ -31,10 +29,10 @@ public class StockIntentService extends IntentService {
         if (intent.getStringExtra("tag").equals("add")) {
             args.putString("symbol", intent.getStringExtra("symbol"));
         } else if (intent.getStringExtra("tag").equals("detail")) {
-            String data = intent.getCharSequenceExtra(DETAIL_SYMBOL).toString();
+            String data = intent.getCharSequenceExtra(StockTaskService.DETAIL_SYMBOL).toString();
             Log.i(LOG_TAG, "onHandleIntent -- Detail Symbol: " + data);
 
-            // Remove once data is actually getting passed and log is actually printing.
+            // Remove the return; once data is actually getting passed and log is actually printing.
             return;
         }
         // We can call OnRunTask from the intent service to force it to run immediately instead of

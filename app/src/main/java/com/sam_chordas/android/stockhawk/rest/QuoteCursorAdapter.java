@@ -1,6 +1,7 @@
 package com.sam_chordas.android.stockhawk.rest;
 
 import android.content.Context;
+import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Color;
 import android.graphics.Typeface;
@@ -16,6 +17,7 @@ import android.widget.TextView;
 import com.sam_chordas.android.stockhawk.R;
 import com.sam_chordas.android.stockhawk.data.QuoteColumns;
 import com.sam_chordas.android.stockhawk.data.QuoteProvider;
+import com.sam_chordas.android.stockhawk.service.StockIntentService;
 import com.sam_chordas.android.stockhawk.touch_helper.ItemTouchHelperAdapter;
 import com.sam_chordas.android.stockhawk.touch_helper.ItemTouchHelperViewHolder;
 
@@ -25,7 +27,7 @@ import com.sam_chordas.android.stockhawk.touch_helper.ItemTouchHelperViewHolder;
  *    https://gist.github.com/skyfishjy/443b7448f59be978bc59
  * for the code structure
  */
-public class QuoteCursorAdapter extends CursorRecyclerViewAdapter<QuoteCursorAdapter.ViewHolder> implements ItemTouchHelperAdapter {
+public class QuoteCursorAdapter extends CursorRecyclerViewAdapter<QuoteCursorAdapter.ViewHolder> implements ItemTouchHelperAdapter, View.OnClickListener {
 
     private static final String LOG_TAG = QuoteCursorAdapter.class.getSimpleName();
 
@@ -92,12 +94,7 @@ public class QuoteCursorAdapter extends CursorRecyclerViewAdapter<QuoteCursorAda
 
 
         Snackbar snackbar = Snackbar.make(rv, "You deleted " + symbol + ".", Snackbar.LENGTH_LONG)
-                                    .setAction("UNDO", new View.OnClickListener() {
-                                        @Override
-                                        public void onClick(View v) {
-                                            Log.d(LOG_TAG, "Snackbar callback function - UNDO button clicked.");
-                                        }
-                                    });
+                                    .setAction("UNDO", this);
 
         snackbar.show();
 
@@ -106,6 +103,17 @@ public class QuoteCursorAdapter extends CursorRecyclerViewAdapter<QuoteCursorAda
 
     @Override public int getItemCount() {
     return super.getItemCount();
+    }
+
+    @Override
+    public void onClick(View v) {
+        Log.d(LOG_TAG, "Snackbar callback function - UNDO button clicked for symbol: " + deletedSymbol);
+
+        Intent intent = new Intent(mContext, StockIntentService.class);
+        intent.putExtra("tag", "add");
+        intent.putExtra("symbol", deletedSymbol);
+        intent.putExtra("position", deletedSymbolPos);
+        mContext.startService(intent);
     }
 
     public static class ViewHolder extends RecyclerView.ViewHolder implements ItemTouchHelperViewHolder, View.OnClickListener {
