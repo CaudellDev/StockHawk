@@ -142,7 +142,7 @@ public class QuoteCursorAdapter extends CursorRecyclerViewAdapter<QuoteCursorAda
 
         @Override
         public void onClick(View v) {
-
+            Log.i(LOG_TAG, "onClick -> " + v);
         }
     }
 }

@@ -96,6 +96,15 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
                 @Override public void onItemClick(View v, int position) {
                     //TODO:
                     // do something on item click
+                    Log.i(LOG_TAG, "RecyclerView onItemTouchListener - position: " + position);
+
+                    mCursor.moveToPosition(position);
+                    int columnIndex = mCursor.getColumnIndex(QuoteColumns.SYMBOL);
+                    String symbol = mCursor.getString(columnIndex);
+
+                    Log.i(LOG_TAG, "You clicked on: " + symbol);
+
+
                 }
             }));
 

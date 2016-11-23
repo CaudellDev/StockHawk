@@ -81,8 +81,7 @@ public class StockTaskService extends GcmTaskService {
             if (initQueryCursor.getCount() == 0 || initQueryCursor == null) {
                 // Init task. Populates DB with quotes for the symbols seen below
                 try {
-                    urlStringBuilder.append(
-                    URLEncoder.encode("\"YHOO\",\"AAPL\",\"GOOG\",\"MSFT\")", "UTF-8"));
+                    urlStringBuilder.append(URLEncoder.encode("\"YHOO\",\"AAPL\",\"GOOG\",\"MSFT\")", "UTF-8"));
                 } catch (UnsupportedEncodingException e) {
                     e.printStackTrace();
                 }
@@ -91,8 +90,8 @@ public class StockTaskService extends GcmTaskService {
                 initQueryCursor.moveToFirst();
                 for (int i = 0; i < initQueryCursor.getCount(); i++) {
                     mStoredSymbols.append("\""+
-                    initQueryCursor.getString(initQueryCursor.getColumnIndex("symbol"))+"\",");
-                    initQueryCursor.moveToNext();
+                        initQueryCursor.getString(initQueryCursor.getColumnIndex("symbol"))+"\",");
+                        initQueryCursor.moveToNext();
                 }
 
                 mStoredSymbols.replace(mStoredSymbols.length() - 1, mStoredSymbols.length(), ")");
