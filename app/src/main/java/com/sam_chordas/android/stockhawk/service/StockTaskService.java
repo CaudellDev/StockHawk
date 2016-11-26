@@ -116,7 +116,14 @@ public class StockTaskService extends GcmTaskService {
         } else if (params.getTag().equals("bulk")) {
 
         } else if (params.getTag().equals("detail")) {
-
+            String symbol = params.getTag().equals(StockIntentService.INTENT_SYMBOL);
+            
+            Log.i(LOG_TAG, "Detail tag with symbol: " + symbol);
+            
+            Toast.make(mContext, "StockTaskService started with detail tag and symbol " + symbol + ". Now exiting the task.", Toast.LENGTH_LONG).show();
+            
+            // Remove return; when log is printing with correct data.
+            return 0;
         }
         // finalize the URL for the API query.
         urlStringBuilder.append("&format=json&diagnostics=true&env=store%3A%2F%2Fdatatables." + "org%2Falltableswithkeys&callback=");
