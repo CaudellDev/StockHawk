@@ -7,6 +7,8 @@ import android.database.Cursor;
 import android.database.DatabaseUtils;
 import android.os.RemoteException;
 import android.util.Log;
+import android.widget.Toast;
+
 import com.google.android.gms.gcm.GcmNetworkManager;
 import com.google.android.gms.gcm.GcmTaskService;
 import com.google.android.gms.gcm.TaskParams;
@@ -116,11 +118,11 @@ public class StockTaskService extends GcmTaskService {
         } else if (params.getTag().equals("bulk")) {
 
         } else if (params.getTag().equals("detail")) {
-            String symbol = params.getTag().equals(StockIntentService.INTENT_SYMBOL);
+            String symbol = params.getExtras().getString(StockIntentService.INTENT_SYMBOL);
             
             Log.i(LOG_TAG, "Detail tag with symbol: " + symbol);
             
-            Toast.make(mContext, "StockTaskService started with detail tag and symbol " + symbol + ". Now exiting the task.", Toast.LENGTH_LONG).show();
+            Toast.makeText(mContext, "StockTaskService started with detail tag and symbol " + symbol + ". Now exiting the task.", Toast.LENGTH_LONG).show();
             
             // Remove return; when log is printing with correct data.
             return 0;
