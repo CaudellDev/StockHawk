@@ -12,6 +12,11 @@ import com.google.android.gms.gcm.TaskParams;
 public class StockIntentService extends IntentService {
 
     private static final String LOG_TAG = StockIntentService.class.getSimpleName();
+    
+    public static final String INTENT_TAG = "tag";
+    public static final String INTENT_ADD = "add";
+    public static final String INTENT_DETAIL = "detail";
+    public static final String INTENT_SYMBOL = "symbol";
 
     public StockIntentService(){
     super(StockIntentService.class.getName());
@@ -26,10 +31,10 @@ public class StockIntentService extends IntentService {
         StockTaskService stockTaskService = new StockTaskService(this);
         Bundle args = new Bundle();
 
-        if (intent.getStringExtra("tag").equals("add")) {
-            args.putString("symbol", intent.getStringExtra("symbol"));
-        } else if (intent.getStringExtra("tag").equals("detail")) {
-            String data = intent.getCharSequenceExtra(StockTaskService.DETAIL_SYMBOL).toString();
+        if (intent.getStringExtra(INTENT_TAG).equals(INTENT_ADD)) {
+            args.putString(INTENT_SYMBOL, intent.getStringExtra(INTENT_SYMBOL));
+        } else if (intent.getStringExtra(INTENT_TAG).equals(INTENT_DETAIL)) {
+            String data = intent.getCharSequenceExtra(INTENT_DETAIL).toString();
             Log.i(LOG_TAG, "onHandleIntent -- Detail Symbol: " + data);
 
             // Remove the return; once data is actually getting passed and log is actually printing.
@@ -37,6 +42,6 @@ public class StockIntentService extends IntentService {
         }
         // We can call OnRunTask from the intent service to force it to run immediately instead of
         // scheduling a task.
-        stockTaskService.onRunTask(new TaskParams(intent.getStringExtra("tag"), args));
+        stockTaskService.onRunTask(new TaskParams(intent.getStringExtra(INTENT_TAG), args));
     }
 }
