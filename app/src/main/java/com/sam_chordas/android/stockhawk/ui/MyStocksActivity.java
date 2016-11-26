@@ -104,7 +104,14 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
 
                     Log.i(LOG_TAG, "You clicked on: " + symbol);
 
-
+                    // Start the service and create the new activity.
+                    if (isConnected) {
+                        mServiceIntent.putExtra(StockIntentService.INTENT_TAG, StockIntentService.INTENT_DETAIL);
+                        mServiceIntent.putExtra(StockIntentService.INTENT_SYMBOL, symbol);
+                        startService(mServiceIntent);
+                    } else {
+                        noNetworkToast();
+                    }
                 }
             }));
 
