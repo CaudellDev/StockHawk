@@ -20,5 +20,19 @@ public class StocksDetailActivity extends Activity {
     
     TextView symbolDisplay = (TextView) findViewById(R.id.details_debug_textview);
     symbolDisplay.append(symbol);
+    
+    GraphView testGraph = (GraphView) findViewById(R.id.test_point_graph);
+    
+    LineGraphSeries<DataPoint> series = new LineGraphSeries<>(new DataPoint[] {
+            new DataPoint(0, 5),
+            new DataPoint(1, 1),
+            new DataPoint(2, 1),
+            new DataPoint(3, 9),
+            new DataPoint(4, 3),
+            new DataPoint(5, 5)
+    });
+    
+    testGraph.addSeries(series);
+    
   }
 }
