@@ -37,6 +37,18 @@ public class StockTaskService extends GcmTaskService {
     public static final String ADD_EXTRA = "add";
     public static final String SYMBOL_EXTRA = "symbol";
 
+    private static final String URL_BASE = "http://query.yahooapis.com/v1/public/yql?q=";
+    private static final String URL_QUOTE = "yahoo.finance.quote";
+    private static final String URL_HISTORY = "yahoo.finance.historicaldata";
+    private static final String URL_SELECT = " select * from ";
+    private static final String URL_SYMBOL = " where symbol ";
+    private static final String URL_STDATE = " and startDate = ";
+    private static final String URL_ENDATE = " and endDate = ";
+    private static final String URL_FORMAT = "format=json";
+    private static final String URL_DIAG = "diagnostics=true";
+    private static final String URL_ENV = "env=store://datatables.org/alltableswithkeys";
+    private static final String URL_CALLBK = "callback=";
+
     private OkHttpClient client = new OkHttpClient();
     private Context mContext;
     private StringBuilder mStoredSymbols = new StringBuilder();
@@ -65,15 +77,22 @@ public class StockTaskService extends GcmTaskService {
         }
 
         StringBuilder urlStringBuilder = new StringBuilder();
-        try {
-            // Base URL for the Yahoo query
-            urlStringBuilder.append("https://query.yahooapis.com/v1/public/yql?q=");
-            urlStringBuilder.append(URLEncoder.encode("select * from yahoo.finance.quotes where symbol "
-            + "in (", "UTF-8"));
-        } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
-        }
+        String usedApi = "";
+        String usedSymbol = "";
+//        try {
+//            // Base URL for the Yahoo query
+//            urlStringBuilder.append("https://query.yahooapis.com/v1/public/yql?q=");
+//
+//            if (params.getTag().equals(StockIntentService.INTENT_ADD)) {
+//                urlStringBuilder.append(URLEncoder.encode("select * from yahoo.finance.quotes where symbol " + "in (", "UTF-8"));
+//            } else {
+//                urlStringBuilder.append(URLEncoder.encode("select * from yahoo.finance.historicaldata where symbol " + "in (", "UTF-8"));
+//            }
+//        } catch (UnsupportedEncodingException e) {
+//            e.printStackTrace();
+//        }
 
+        // Combine these because they both need a query cursor?
         if (params.getTag().equals("init") || params.getTag().equals("periodic")) {
             isUpdate = true;
             initQueryCursor = mContext.getContentResolver().query(QuoteProvider.Quotes.CONTENT_URI,
@@ -122,10 +141,19 @@ public class StockTaskService extends GcmTaskService {
             
             Log.i(LOG_TAG, "Detail tag with symbol: " + symbol);
             
-            Toast.makeText(mContext, "StockTaskService started with detail tag and symbol " + symbol + ". Now exiting the task.", Toast.LENGTH_LONG).show();
-            
-            // Remove return; when log is printing with correct data.
-            return 0;
+            try {
+                urlStringBuilder.append(URLEncoder.encode("\"" + symbol + "\"", "UTF-8"));
+
+                // Get the start and end dates
+                String startDate = "2016-11-21";
+                String endDate = "2016-11-28";
+
+                // TODO: Get actual dates
+
+                urlStringBuilder.append(URLEncoder.encode(" and startDate = " + "\"" + startDate + "\"" + " and endDate = " + "\"" + endDate + "\"", "UTF-8"));
+            } catch (UnsupportedEncodingException e) {
+                e.printStackTrace();
+            }
         }
         // finalize the URL for the API query.
         urlStringBuilder.append("&format=json&diagnostics=true&env=store%3A%2F%2Fdatatables." + "org%2Falltableswithkeys&callback=");
@@ -140,7 +168,7 @@ public class StockTaskService extends GcmTaskService {
                 getResponse = fetchData(urlString);
                 result = GcmNetworkManager.RESULT_SUCCESS;
 
-                Log.i(LOG_TAG, "URL: " + urlString);
+                Log.i(LOG_TAG, "URL: " + urlString + "\n\n");
                 Log.i(LOG_TAG, "Get Response: " + getResponse);
 
                 try {
@@ -162,6 +190,10 @@ public class StockTaskService extends GcmTaskService {
         }
 
         return result;
+    }
+
+    private String getQuoteUrl(String stock) {
+
     }
 
 }

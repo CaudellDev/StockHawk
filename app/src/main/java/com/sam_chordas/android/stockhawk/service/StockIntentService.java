@@ -37,8 +37,7 @@ public class StockIntentService extends IntentService {
             String data = intent.getCharSequenceExtra(INTENT_SYMBOL).toString();
             Log.i(LOG_TAG, "onHandleIntent -- Detail Symbol: " + data);
 
-            // Remove the return; once data is actually getting passed and log is actually printing.
-            return;
+            args.putString(INTENT_SYMBOL, data);
         }
         // We can call OnRunTask from the intent service to force it to run immediately instead of
         // scheduling a task.
