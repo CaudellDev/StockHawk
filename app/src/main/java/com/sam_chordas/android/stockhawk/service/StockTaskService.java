@@ -37,13 +37,22 @@ public class StockTaskService extends GcmTaskService {
     public static final String ADD_EXTRA = "add";
     public static final String SYMBOL_EXTRA = "symbol";
 
-    private static final String URL_BASE = "http://query.yahooapis.com/v1/public/yql?q=";
-    private static final String URL_QUOTE = "yahoo.finance.quote";
-    private static final String URL_HISTORY = "yahoo.finance.historicaldata";
+    
+    private static final String URL_SEC = "https://";
+    private static final String URL_INSEC = "http://";
+    
+    private static final String URL_BASE = "query.yahooapis.com/v1/public/yql?q=";
+    
     private static final String URL_SELECT = " select * from ";
     private static final String URL_SYMBOL = " where symbol ";
+    private static final String URL_INIT = "(\"YHOO\",\"AAPL\",\"GOOG\",\"MSFT\")";
+    
+    private static final String URL_QUOTE = "yahoo.finance.quote";
+    private static final String URL_HISTORY = "yahoo.finance.historicaldata";
+    
     private static final String URL_STDATE = " and startDate = ";
     private static final String URL_ENDATE = " and endDate = ";
+    
     private static final String URL_FORMAT = "format=json";
     private static final String URL_DIAG = "diagnostics=true";
     private static final String URL_ENV = "env=store://datatables.org/alltableswithkeys";
@@ -77,8 +86,13 @@ public class StockTaskService extends GcmTaskService {
         }
 
         StringBuilder urlStringBuilder = new StringBuilder();
-        String usedApi = "";
-        String usedSymbol = "";
+        String usedApi = "<api>";
+        String usedSymbol = "<symbol>";
+        
+        // If the URL doesn't need these, they will be set to empty and will be ignored.
+        String usedStDate = URL_STDATE + "<stdate>";
+        String usedEnDate = URL_ ENDDATE + "<endate>";
+        
 //        try {
 //            // Base URL for the Yahoo query
 //            urlStringBuilder.append("https://query.yahooapis.com/v1/public/yql?q=");
@@ -95,37 +109,47 @@ public class StockTaskService extends GcmTaskService {
         // Combine these because they both need a query cursor?
         if (params.getTag().equals("init") || params.getTag().equals("periodic")) {
             isUpdate = true;
-            initQueryCursor = mContext.getContentResolver().query(QuoteProvider.Quotes.CONTENT_URI,
-                        new String[] { "Distinct " + QuoteColumns.SYMBOL }, null,
-                        null, null);
+            initQueryCursor = mContext.getContentResolver().query(
+                        QuoteProvider.Quotes.CONTENT_URI,
+                        new String[] { "Distinct " + QuoteColumns.SYMBOL }, 
+                        null, null, null);
 
+            // If it's empty, initialize it with some basic stocks.
             if (initQueryCursor.getCount() == 0 || initQueryCursor == null) {
                 // Init task. Populates DB with quotes for the symbols seen below
                 try {
                     urlStringBuilder.append(URLEncoder.encode("\"YHOO\",\"AAPL\",\"GOOG\",\"MSFT\")", "UTF-8"));
+//                     usedSymbol = URL_INIT;
                 } catch (UnsupportedEncodingException e) {
                     e.printStackTrace();
                 }
-            } else if (initQueryCursor != null) {
+            } else if (initQueryCursor != null) { // Periodic updates?
                 DatabaseUtils.dumpCursor(initQueryCursor);
                 initQueryCursor.moveToFirst();
+                
+                // Go through all of the Stocks and add them to a StringBuilder instance.
                 for (int i = 0; i < initQueryCursor.getCount(); i++) {
                     mStoredSymbols.append("\""+
                         initQueryCursor.getString(initQueryCursor.getColumnIndex("symbol"))+"\",");
                         initQueryCursor.moveToNext();
                 }
 
+                // Not sure what this does?? Replaces the last character with a ")"?
                 mStoredSymbols.replace(mStoredSymbols.length() - 1, mStoredSymbols.length(), ")");
 
                 try {
                     urlStringBuilder.append(URLEncoder.encode(mStoredSymbols.toString(), "UTF-8"));
+//                     usedSymbol = mStoredSymbols.toString();
                 } catch (UnsupportedEncodingException e) {
                     e.printStackTrace();
                 }
             }
         } else if (params.getTag().equals("add")) {
-            // TODO: Check for the position param in here?
-
+            // TODO: Check for the position param in here? Or was the selected symbol passed into params?
+            
+            usedStDate = "";
+            usedEnDate = "";
+            
             isUpdate = false;
             // get symbol from params.getExtra and build query
             String stockInput = params.getExtras().getString("symbol");
@@ -134,10 +158,9 @@ public class StockTaskService extends GcmTaskService {
             } catch (UnsupportedEncodingException e) {
                 e.printStackTrace();
             }
-        } else if (params.getTag().equals("bulk")) {
-
         } else if (params.getTag().equals("detail")) {
             String symbol = params.getExtras().getString(StockIntentService.INTENT_SYMBOL);
+//             usedSymbol = params.getExtras().getString(StockIntentService.INTENT_SYMBOL);
             
             Log.i(LOG_TAG, "Detail tag with symbol: " + symbol);
             
@@ -155,8 +178,22 @@ public class StockTaskService extends GcmTaskService {
                 e.printStackTrace();
             }
         }
-        // finalize the URL for the API query.
-        urlStringBuilder.append("&format=json&diagnostics=true&env=store%3A%2F%2Fdatatables." + "org%2Falltableswithkeys&callback=");
+        
+        // Build the URL here instead
+        urlStringBuilder.append(URL_INSEC)
+                        .append(URL_BASE)
+                        .append(encode(URL_SELECT))
+                        .append(encode(usedApi))
+                        .append(encode(URL_SYMBOL))
+                        .append(encode(usedSymbol))
+                        .append(encode(usedStDate))
+                        .append(encode(usedEnDate))
+                        .append(encode(URL_FORMAT)).append(encode(URL_DIAG)).append(encode(URL_ENV)).append(encode(URL_CALLBK));
+        
+        Log.i(LOG_TAG, "urlStringBuilder = " + urlStringBuilder.toString());
+        
+//         // finalize the URL for the API query.
+//         urlStringBuilder.append("&format=json&diagnostics=true&env=store%3A%2F%2Fdatatables." + "org%2Falltableswithkeys&callback=");
 
         String urlString;
         String getResponse;
@@ -195,5 +232,8 @@ public class StockTaskService extends GcmTaskService {
     private String getQuoteUrl(String stock) {
 
     }
-
+    
+    private String encode(String string) {
+        return URLEncoder.encode(string, "UTF-8");
+    }
 }
