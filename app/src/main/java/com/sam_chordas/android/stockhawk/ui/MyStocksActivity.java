@@ -108,6 +108,7 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
                     if (isConnected) {
                         mServiceIntent.putExtra(StockIntentService.INTENT_TAG, StockIntentService.INTENT_DETAIL);
                         mServiceIntent.putExtra(StockIntentService.INTENT_SYMBOL, symbol);
+
                         startService(mServiceIntent);
                     } else {
                         noNetworkToast();
@@ -269,6 +270,8 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
 
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+        Log.v(LOG_TAG, "onCreateLoader - args: " + args);
+
         // This narrows the return to only the stocks that are most current.
         return new CursorLoader(this, QuoteProvider.Quotes.CONTENT_URI,
                                 new String[]{ QuoteColumns._ID, QuoteColumns.SYMBOL, QuoteColumns.BIDPRICE,
@@ -280,13 +283,17 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
 
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor data){
+        Log.v(LOG_TAG, "onLoadFinished - data: " + data);
+
         mCursorAdapter.swapCursor(data);
         mCursor = data;
     }
 
     @Override
     public void onLoaderReset(Loader<Cursor> loader){
-    mCursorAdapter.swapCursor(null);
+        Log.v(LOG_TAG, "onLoaderReset - loader: " + loader);
+
+        mCursorAdapter.swapCursor(null);
     }
 
 }

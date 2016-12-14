@@ -22,6 +22,7 @@ public class Utils {
         ArrayList<ContentProviderOperation> batchOperations = new ArrayList<>();
         JSONObject jsonObject = null;
         JSONArray resultsArray = null;
+        boolean historical = false;
 
         try {
             jsonObject = new JSONObject(JSON);
@@ -30,17 +31,36 @@ public class Utils {
                 int count = Integer.parseInt(jsonObject.getString("count"));
 
                 if (count == 1) {
-                    jsonObject = jsonObject.getJSONObject("results").getJSONObject("quote");
-                    batchOperations.add(buildBatchOperation(jsonObject));
+                    jsonObject = jsonObject.getJSONObject("results");
+
+                    jsonObject = jsonObject.getJSONObject("query");
+                    batchOperations.add(buildBatchOperation(jsonObject, true));
+
+//                    Object queryTemp = jsonObject.get("query");
+//                    if (queryTemp instanceof JSONArray) {
+//                        historical = true;
+//
+//                        JSONArray queryArray = (JSONArray) queryTemp;
+//                    } else if (queryTemp instanceof JSONObject) {
+//
+//                        batchOperations.add(buildBatchOperation((JSONObject) queryTemp));
+//                    }
+
                 } else {
+
                     resultsArray = jsonObject.getJSONObject("results").getJSONArray("quote");
 
-                if (resultsArray != null && resultsArray.length() != 0) {
-                    for (int i = 0; i < resultsArray.length(); i++) {
-                        jsonObject = resultsArray.getJSONObject(i);
-                        batchOperations.add(buildBatchOperation(jsonObject));
+                    if (resultsArray != null && resultsArray.length() != 0) {
+
+                        Log.v(LOG_TAG, "JSON Array \"query\":" + resultsArray.toString());
+
+                        historical = resultsArray.getJSONObject(0).has("Date"); // Something only historical data would have.
+
+                        for (int i = 0; i < resultsArray.length(); i++) {
+                            jsonObject = resultsArray.getJSONObject(i);
+                            batchOperations.add(buildBatchOperation(jsonObject, !historical));
+                        }
                     }
-                }
                 }
             }
         } catch (JSONException e) {
@@ -75,22 +95,37 @@ public class Utils {
         return change;
     }
 
-    public static ContentProviderOperation buildBatchOperation(JSONObject jsonObject) {
+    public static ContentProviderOperation buildBatchOperation(JSONObject jsonObject, boolean quote) {
         ContentProviderOperation.Builder builder = ContentProviderOperation.newInsert(QuoteProvider.Quotes.CONTENT_URI);
 
         try {
-            String change = jsonObject.getString("Change");
-            builder.withValue(QuoteColumns.SYMBOL, jsonObject.getString("symbol"));
-            builder.withValue(QuoteColumns.BIDPRICE, truncateBidPrice(jsonObject.getString("Bid")));
-            builder.withValue(QuoteColumns.PERCENT_CHANGE, truncateChange(
-            jsonObject.getString("ChangeinPercent"), true));
-            builder.withValue(QuoteColumns.CHANGE, truncateChange(change, false));
-            builder.withValue(QuoteColumns.ISCURRENT, 1);
 
-            if (change.charAt(0) == '-') {
-                builder.withValue(QuoteColumns.ISUP, 0);
+            if (quote) {
+                String change = jsonObject.getString("Change");
+                builder.withValue(QuoteColumns.SYMBOL, jsonObject.getString("symbol"));
+                builder.withValue(QuoteColumns.BIDPRICE, truncateBidPrice(jsonObject.getString("Bid")));
+                builder.withValue(QuoteColumns.PERCENT_CHANGE, truncateChange(
+                        jsonObject.getString("ChangeinPercent"), true));
+                builder.withValue(QuoteColumns.CHANGE, truncateChange(change, false));
+                builder.withValue(QuoteColumns.ISCURRENT, 1);
+
+                if (change.charAt(0) == '-') {
+                    builder.withValue(QuoteColumns.ISUP, 0);
+                } else {
+                    builder.withValue(QuoteColumns.ISUP, 1);
+                }
             } else {
-                builder.withValue(QuoteColumns.ISUP, 1);
+                Log.v(LOG_TAG, "jsonObject: " + jsonObject);
+
+                String date = jsonObject.getString("Date");
+                String open = jsonObject.getString("Open");
+                String high = jsonObject.getString("High");
+                String low = jsonObject.getString("Low");
+                String closed = jsonObject.getString("Close");
+                String volume = jsonObject.getString("Volume");
+                String adj_close = jsonObject.getString("Adj_Close");
+
+                Log.v(LOG_TAG, "Date: " + date + ", Open: " + open + ", Closed: " + closed);
             }
 
         } catch (JSONException e) {

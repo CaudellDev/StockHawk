@@ -2,6 +2,7 @@ package com.sam_chordas.android.stockhawk.service;
 
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.Intent;
 import android.content.OperationApplicationException;
 import android.database.Cursor;
 import android.database.DatabaseUtils;
@@ -43,25 +44,26 @@ public class StockTaskService extends GcmTaskService {
     
     private static final String URL_BASE = "query.yahooapis.com/v1/public/yql?q=";
     
-    private static final String URL_SELECT = " select * from ";
-    private static final String URL_SYMBOL = " where symbol ";
+    private static final String URL_SELECT = "select * from ";
+    private static final String URL_SYMBOL = " where symbol in ";
     private static final String URL_INIT = "(\"YHOO\",\"AAPL\",\"GOOG\",\"MSFT\")";
     
-    private static final String URL_QUOTE = "yahoo.finance.quote";
+    private static final String URL_QUOTE = "yahoo.finance.quotes";
     private static final String URL_HISTORY = "yahoo.finance.historicaldata";
     
     private static final String URL_STDATE = " and startDate = ";
     private static final String URL_ENDATE = " and endDate = ";
     
-    private static final String URL_FORMAT = "format=json";
-    private static final String URL_DIAG = "diagnostics=true";
-    private static final String URL_ENV = "env=store://datatables.org/alltableswithkeys";
-    private static final String URL_CALLBK = "callback=";
+    private static final String URL_FORMAT = "&format=json";
+    private static final String URL_DIAG = "&diagnostics=true";
+    private static final String URL_ENV = "&env=store://datatables.org/alltableswithkeys";
+    private static final String URL_CALLBK = "&callback=";
 
     private OkHttpClient client = new OkHttpClient();
     private Context mContext;
     private StringBuilder mStoredSymbols = new StringBuilder();
     private boolean isUpdate;
+
 
     public StockTaskService() {}
 
@@ -86,29 +88,19 @@ public class StockTaskService extends GcmTaskService {
         }
 
         StringBuilder urlStringBuilder = new StringBuilder();
-        String usedApi = "<api>";
-        String usedSymbol = "<symbol>";
+        String usedTag = params.getTag();
+        String usedApi = "";
+        String usedSymbol = "";
         
-        // If the URL doesn't need these, they will be set to empty and will be ignored.
-        String usedStDate = URL_STDATE + "<stdate>";
-        String usedEnDate = URL_ ENDDATE + "<endate>";
-        
-//        try {
-//            // Base URL for the Yahoo query
-//            urlStringBuilder.append("https://query.yahooapis.com/v1/public/yql?q=");
-//
-//            if (params.getTag().equals(StockIntentService.INTENT_ADD)) {
-//                urlStringBuilder.append(URLEncoder.encode("select * from yahoo.finance.quotes where symbol " + "in (", "UTF-8"));
-//            } else {
-//                urlStringBuilder.append(URLEncoder.encode("select * from yahoo.finance.historicaldata where symbol " + "in (", "UTF-8"));
-//            }
-//        } catch (UnsupportedEncodingException e) {
-//            e.printStackTrace();
-//        }
+        // If the URL needs these params, they will be populated
+        String usedStDate = "";
+        String usedEnDate = "";
 
         // Combine these because they both need a query cursor?
-        if (params.getTag().equals("init") || params.getTag().equals("periodic")) {
+        if (usedTag.equals("init") || usedTag.equals("periodic")) {
             isUpdate = true;
+            usedApi = URL_QUOTE;
+
             initQueryCursor = mContext.getContentResolver().query(
                         QuoteProvider.Quotes.CONTENT_URI,
                         new String[] { "Distinct " + QuoteColumns.SYMBOL }, 
@@ -117,16 +109,14 @@ public class StockTaskService extends GcmTaskService {
             // If it's empty, initialize it with some basic stocks.
             if (initQueryCursor.getCount() == 0 || initQueryCursor == null) {
                 // Init task. Populates DB with quotes for the symbols seen below
-                try {
-                    urlStringBuilder.append(URLEncoder.encode("\"YHOO\",\"AAPL\",\"GOOG\",\"MSFT\")", "UTF-8"));
-//                     usedSymbol = URL_INIT;
-                } catch (UnsupportedEncodingException e) {
-                    e.printStackTrace();
-                }
+                usedSymbol = URL_INIT;
+
             } else if (initQueryCursor != null) { // Periodic updates?
                 DatabaseUtils.dumpCursor(initQueryCursor);
                 initQueryCursor.moveToFirst();
-                
+
+                mStoredSymbols.append("("); // Starting parenth
+
                 // Go through all of the Stocks and add them to a StringBuilder instance.
                 for (int i = 0; i < initQueryCursor.getCount(); i++) {
                     mStoredSymbols.append("\""+
@@ -135,65 +125,43 @@ public class StockTaskService extends GcmTaskService {
                 }
 
                 // Not sure what this does?? Replaces the last character with a ")"?
-                mStoredSymbols.replace(mStoredSymbols.length() - 1, mStoredSymbols.length(), ")");
+                mStoredSymbols.replace(mStoredSymbols.length() - 1, mStoredSymbols.length(), ")"); // Ending Parenth?
 
-                try {
-                    urlStringBuilder.append(URLEncoder.encode(mStoredSymbols.toString(), "UTF-8"));
-//                     usedSymbol = mStoredSymbols.toString();
-                } catch (UnsupportedEncodingException e) {
-                    e.printStackTrace();
-                }
+                usedSymbol = mStoredSymbols.toString();
             }
-        } else if (params.getTag().equals("add")) {
+        } else if (usedTag.equals("add")) {
             // TODO: Check for the position param in here? Or was the selected symbol passed into params?
-            
-            usedStDate = "";
-            usedEnDate = "";
-            
             isUpdate = false;
+            usedApi = URL_QUOTE;
+
             // get symbol from params.getExtra and build query
             String stockInput = params.getExtras().getString("symbol");
-            try {
-                urlStringBuilder.append(URLEncoder.encode("\""+stockInput+"\")", "UTF-8"));
-            } catch (UnsupportedEncodingException e) {
-                e.printStackTrace();
-            }
-        } else if (params.getTag().equals("detail")) {
-            String symbol = params.getExtras().getString(StockIntentService.INTENT_SYMBOL);
-//             usedSymbol = params.getExtras().getString(StockIntentService.INTENT_SYMBOL);
-            
-            Log.i(LOG_TAG, "Detail tag with symbol: " + symbol);
-            
-            try {
-                urlStringBuilder.append(URLEncoder.encode("\"" + symbol + "\"", "UTF-8"));
+            usedSymbol = "(\"" + stockInput + "\")";
+        } else if (usedTag.equals("detail")) {
+            usedApi = URL_HISTORY;
+            usedSymbol = "(\"" + params.getExtras().getString(StockIntentService.INTENT_SYMBOL) + "\")";
 
-                // Get the start and end dates
-                String startDate = "2016-11-21";
-                String endDate = "2016-11-28";
-
-                // TODO: Get actual dates
-
-                urlStringBuilder.append(URLEncoder.encode(" and startDate = " + "\"" + startDate + "\"" + " and endDate = " + "\"" + endDate + "\"", "UTF-8"));
-            } catch (UnsupportedEncodingException e) {
-                e.printStackTrace();
-            }
+            // TODO: Get actual dates
+            usedStDate = URL_STDATE + "\"" + "2016-11-21" + "\"";
+            usedEnDate = URL_ENDATE + "\"" + "2016-11-28" + "\"";
+        } else {
+            if (usedTag.isEmpty()) usedTag = "<empty>";
+            Log.e(LOG_TAG, "This tag, " + usedTag + " was not recognized. Cannot complete the Task Service.");
+            return GcmNetworkManager.RESULT_FAILURE;
         }
         
-        // Build the URL here instead
-        urlStringBuilder.append(URL_INSEC)
-                        .append(URL_BASE)
-                        .append(encode(URL_SELECT))
-                        .append(encode(usedApi))
-                        .append(encode(URL_SYMBOL))
+        // Build the URL here, all at once
+        urlStringBuilder.append(URL_SEC)                // https
+                        .append(URL_BASE)               // yahooapis.com
+                        .append(encode(URL_SELECT))     // select *
+                        .append(encode(usedApi))        // quote or historical data
+                        .append(encode(URL_SYMBOL))     // where symbol in
                         .append(encode(usedSymbol))
-                        .append(encode(usedStDate))
-                        .append(encode(usedEnDate))
-                        .append(encode(URL_FORMAT)).append(encode(URL_DIAG)).append(encode(URL_ENV)).append(encode(URL_CALLBK));
+                        .append((usedStDate))
+                        .append((usedEnDate))
+                        .append(URL_FORMAT).append((URL_DIAG)).append((URL_ENV)).append((URL_CALLBK));
         
         Log.i(LOG_TAG, "urlStringBuilder = " + urlStringBuilder.toString());
-        
-//         // finalize the URL for the API query.
-//         urlStringBuilder.append("&format=json&diagnostics=true&env=store%3A%2F%2Fdatatables." + "org%2Falltableswithkeys&callback=");
 
         String urlString;
         String getResponse;
@@ -214,12 +182,11 @@ public class StockTaskService extends GcmTaskService {
                     if (isUpdate) {
                         contentValues.put(QuoteColumns.ISCURRENT, 0);
                         mContext.getContentResolver().update(QuoteProvider.Quotes.CONTENT_URI, contentValues,
-                                            null, null);
+                                             null, null);
                     }
-                    mContext.getContentResolver().applyBatch(QuoteProvider.AUTHORITY,
-                    Utils.quoteJsonToContentVals(getResponse));
+                    mContext.getContentResolver().applyBatch(QuoteProvider.AUTHORITY, Utils.quoteJsonToContentVals(getResponse));
                 } catch (RemoteException | OperationApplicationException e) {
-                    Log.e(LOG_TAG, "Error applying batch insert", e);
+                    Log.e(LOG_TAG, "Error applying batch insert ", e);
                 }
             } catch (IOException e) {
                 e.printStackTrace();
@@ -229,11 +196,24 @@ public class StockTaskService extends GcmTaskService {
         return result;
     }
 
-    private String getQuoteUrl(String stock) {
 
+
+    private String getQuoteUrl(String stock) {
+        return "";
     }
     
     private String encode(String string) {
-        return URLEncoder.encode(string, "UTF-8");
+        try {
+            return URLEncoder.encode(string, "UTF-8");
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    private static void sendMessageToActivity(String json) {
+        Intent intent = new Intent("HistoricalDetailData");
+
+        intent.putExtra(StockIntentService.INTENT_DETAIL, json);
     }
 }
