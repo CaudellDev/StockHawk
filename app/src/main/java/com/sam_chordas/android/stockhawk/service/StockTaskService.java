@@ -68,7 +68,7 @@ public class StockTaskService extends GcmTaskService {
     public StockTaskService() {}
 
     public StockTaskService(Context context){
-    mContext = context;
+        mContext = context;
     }
 
     String fetchData(String url) throws IOException {
@@ -175,18 +175,25 @@ public class StockTaskService extends GcmTaskService {
 
                 Log.i(LOG_TAG, "URL: " + urlString + "\n\n");
                 Log.i(LOG_TAG, "Get Response: " + getResponse);
-
-                try {
-                    ContentValues contentValues = new ContentValues();
-                    // update ISCURRENT to 0 (false) so new data is current
-                    if (isUpdate) {
-                        contentValues.put(QuoteColumns.ISCURRENT, 0);
-                        mContext.getContentResolver().update(QuoteProvider.Quotes.CONTENT_URI, contentValues,
-                                             null, null);
+                
+                if (usedTag.equals("detail")) {
+                    // The ContentResolver doesn't need this data,
+                    // the MainActivity needs it to launch the
+                    // DetailActivity.
+                    sendMessageToActivity(getResponse);
+                } else {
+                    try {
+                        ContentValues contentValues = new ContentValues();
+                        // update ISCURRENT to 0 (false) so new data is current
+                        if (isUpdate) {
+                            contentValues.put(QuoteColumns.ISCURRENT, 0);
+                            mContext.getContentResolver().update(QuoteProvider.Quotes.CONTENT_URI, contentValues,
+                                                 null, null);
+                        }
+                        mContext.getContentResolver().applyBatch(QuoteProvider.AUTHORITY, Utils.quoteJsonToContentVals(getResponse));
+                    } catch (RemoteException | OperationApplicationException e) {
+                        Log.e(LOG_TAG, "Error applying batch insert ", e);
                     }
-                    mContext.getContentResolver().applyBatch(QuoteProvider.AUTHORITY, Utils.quoteJsonToContentVals(getResponse));
-                } catch (RemoteException | OperationApplicationException e) {
-                    Log.e(LOG_TAG, "Error applying batch insert ", e);
                 }
             } catch (IOException e) {
                 e.printStackTrace();
@@ -212,8 +219,11 @@ public class StockTaskService extends GcmTaskService {
     }
 
     private static void sendMessageToActivity(String json) {
+        Log.v(LOG_TAG, "sendMessageToActivity: " + json);
+        
         Intent intent = new Intent("HistoricalDetailData");
-
         intent.putExtra(StockIntentService.INTENT_DETAIL, json);
+        
+        LocalBroadcastManager.getInstance(mContext).sendBroadcast(intent);
     }
 }
