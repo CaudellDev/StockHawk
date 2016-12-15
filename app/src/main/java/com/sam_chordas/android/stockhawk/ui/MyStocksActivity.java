@@ -52,6 +52,7 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
      */
     private CharSequence mTitle;
     private Intent mServiceIntent;
+    private HistoricalReciever mHistReciever;
     private ItemTouchHelper mItemTouchHelper;
     private static final int CURSOR_LOADER_ID = 0;
     private QuoteCursorAdapter mCursorAdapter;
@@ -183,6 +184,11 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
             // are updated.
             GcmNetworkManager.getInstance(this).schedule(periodicTask);
         }
+        
+        // Setup BroadcastReciever to get data from service
+        // when user clicks on a Stock, and to launch new activity.
+        LocalBroadcastManager.getInstance(getContext())
+            .registerReceiver(mMessageReceiver, new IntentFilter("HistoricalDetailData"));
     }
 
 
@@ -294,6 +300,19 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
         Log.v(LOG_TAG, "onLoaderReset - loader: " + loader);
 
         mCursorAdapter.swapCursor(null);
+    }
+    
+    protected class HistoricalReciever extends BroadcastReceiver {
+        
+        @Override
+        public void onMessageRecived(Context context, Intent intent) {
+            String data = intent.getStringExtra(StockIntentService.INTENT_DETAIL);
+            Log.v(LOG_TAG, "onMessageRecived: " + data);
+            
+            // Get JSON data
+            // Parse JSON data?
+            // Start Detail Activity
+        }
     }
 
 }
