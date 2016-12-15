@@ -22,7 +22,6 @@ public class Utils {
         ArrayList<ContentProviderOperation> batchOperations = new ArrayList<>();
         JSONObject jsonObject = null;
         JSONArray resultsArray = null;
-        boolean historical = false;
 
         try {
             jsonObject = new JSONObject(JSON);
@@ -47,18 +46,14 @@ public class Utils {
 //                    }
 
                 } else {
-
                     resultsArray = jsonObject.getJSONObject("results").getJSONArray("quote");
 
                     if (resultsArray != null && resultsArray.length() != 0) {
-
                         Log.v(LOG_TAG, "JSON Array \"query\":" + resultsArray.toString());
-
-                        historical = resultsArray.getJSONObject(0).has("Date"); // Something only historical data would have.
 
                         for (int i = 0; i < resultsArray.length(); i++) {
                             jsonObject = resultsArray.getJSONObject(i);
-                            batchOperations.add(buildBatchOperation(jsonObject, !historical));
+                            batchOperations.add(buildBatchOperation(jsonObject));
                         }
                     }
                 }
@@ -95,43 +90,44 @@ public class Utils {
         return change;
     }
 
-    public static ContentProviderOperation buildBatchOperation(JSONObject jsonObject, boolean quote) {
+    public static ContentProviderOperation buildBatchOperation(JSONObject jsonObject) {
         ContentProviderOperation.Builder builder = ContentProviderOperation.newInsert(QuoteProvider.Quotes.CONTENT_URI);
 
         try {
+            String change = jsonObject.getString("Change");
+            builder.withValue(QuoteColumns.SYMBOL, jsonObject.getString("symbol"));
+            builder.withValue(QuoteColumns.BIDPRICE, truncateBidPrice(jsonObject.getString("Bid")));
+            builder.withValue(QuoteColumns.PERCENT_CHANGE, truncateChange(jsonObject.getString("ChangeinPercent"), true));
+            builder.withValue(QuoteColumns.CHANGE, truncateChange(change, false));
+            builder.withValue(QuoteColumns.ISCURRENT, 1);
 
-            if (quote) {
-                String change = jsonObject.getString("Change");
-                builder.withValue(QuoteColumns.SYMBOL, jsonObject.getString("symbol"));
-                builder.withValue(QuoteColumns.BIDPRICE, truncateBidPrice(jsonObject.getString("Bid")));
-                builder.withValue(QuoteColumns.PERCENT_CHANGE, truncateChange(
-                        jsonObject.getString("ChangeinPercent"), true));
-                builder.withValue(QuoteColumns.CHANGE, truncateChange(change, false));
-                builder.withValue(QuoteColumns.ISCURRENT, 1);
-
-                if (change.charAt(0) == '-') {
-                    builder.withValue(QuoteColumns.ISUP, 0);
-                } else {
-                    builder.withValue(QuoteColumns.ISUP, 1);
-                }
+            if (change.charAt(0) == '-') {
+                builder.withValue(QuoteColumns.ISUP, 0);
             } else {
-                Log.v(LOG_TAG, "jsonObject: " + jsonObject);
-
-                String date = jsonObject.getString("Date");
-                String open = jsonObject.getString("Open");
-                String high = jsonObject.getString("High");
-                String low = jsonObject.getString("Low");
-                String closed = jsonObject.getString("Close");
-                String volume = jsonObject.getString("Volume");
-                String adj_close = jsonObject.getString("Adj_Close");
-
-                Log.v(LOG_TAG, "Date: " + date + ", Open: " + open + ", Closed: " + closed);
+                builder.withValue(QuoteColumns.ISUP, 1);
             }
-
         } catch (JSONException e) {
             e.printStackTrace();
         }
 
         return builder.build();
+    }
+    
+    public static ArrayList<JSONObject> parseHistoricalJson(Context context, String json) {
+        Log.v(LOG_TAG, "parseHistoricalJson data: " + json);
+        
+        ArrayList<JSONObject> dailyData = new ArrayList<>();
+        
+        try {
+            JSONObject jsonObj = new JSONObject(json);
+            jsonObj = jsonObj.getJSONObject("query").getJSONObject("results");
+            JSONArray jsonArr = jsonObj.getJSONArray("query");
+            int length = jsonArr.length();
+            for (int i = 0; i < length; i++) {
+                // Do stuff...
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
     }
 }
