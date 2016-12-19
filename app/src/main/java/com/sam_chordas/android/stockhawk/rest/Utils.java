@@ -1,6 +1,7 @@
 package com.sam_chordas.android.stockhawk.rest;
 
 import android.content.ContentProviderOperation;
+import android.content.Context;
 import android.util.Log;
 import com.sam_chordas.android.stockhawk.data.QuoteColumns;
 import com.sam_chordas.android.stockhawk.data.QuoteProvider;
@@ -33,7 +34,7 @@ public class Utils {
                     jsonObject = jsonObject.getJSONObject("results");
 
                     jsonObject = jsonObject.getJSONObject("query");
-                    batchOperations.add(buildBatchOperation(jsonObject, true));
+                    batchOperations.add(buildBatchOperation(jsonObject));
 
 //                    Object queryTemp = jsonObject.get("query");
 //                    if (queryTemp instanceof JSONArray) {
@@ -129,5 +130,12 @@ public class Utils {
         } catch (JSONException e) {
             e.printStackTrace();
         }
+
+        return null;
+    }
+
+    public static void log5(String TAG, String MSG) {
+        for (int i = 0; i < 5; i ++) Log.v(TAG, "--|");
+        Log.v(TAG, MSG);
     }
 }

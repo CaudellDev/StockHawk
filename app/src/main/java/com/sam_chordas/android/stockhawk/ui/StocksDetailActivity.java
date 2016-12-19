@@ -23,8 +23,8 @@ public class StocksDetailActivity extends Activity {
     setContentView(R.layout.activity_temp_details);
     
     Intent intent = getIntent();
-    String symbol = intent.getStringExtra(StockIntentService.INTENT_SYMBOL);
-    
+//    String symbol = intent.getStringExtra(StockIntentService.INTENT_SYMBOL);
+    String symbol = intent.getStringExtra("stock_clicked");
     TextView symbolDisplay = (TextView) findViewById(R.id.details_debug_textview);
     symbolDisplay.append(symbol);
     
@@ -40,6 +40,6 @@ public class StocksDetailActivity extends Activity {
     });
     
     testGraph.addSeries(series);
-    
+
   }
 }

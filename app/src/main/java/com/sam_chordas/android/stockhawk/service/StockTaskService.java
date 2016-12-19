@@ -7,6 +7,7 @@ import android.content.OperationApplicationException;
 import android.database.Cursor;
 import android.database.DatabaseUtils;
 import android.os.RemoteException;
+import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -180,7 +181,8 @@ public class StockTaskService extends GcmTaskService {
                     // The ContentResolver doesn't need this data,
                     // the MainActivity needs it to launch the
                     // DetailActivity.
-                    sendMessageToActivity(getResponse);
+//                    sendMessageToActivity(getResponse);
+                    sendMessageToActivity(usedSymbol); // Send this for testing at first.
                 } else {
                     try {
                         ContentValues contentValues = new ContentValues();
@@ -218,12 +220,25 @@ public class StockTaskService extends GcmTaskService {
         return null;
     }
 
-    private static void sendMessageToActivity(String json) {
-        Log.v(LOG_TAG, "sendMessageToActivity: " + json);
-        
-        Intent intent = new Intent("HistoricalDetailData");
-        intent.putExtra(StockIntentService.INTENT_DETAIL, json);
-        
+    private void sendMessageToActivity(String stock) {
+        Utils.log5(LOG_TAG, "sendMessageToActivity: " + stock);
+
+        Intent intent = new Intent("StockClicked");
+        intent.putExtra("stock_clicked", stock);
+
+        Utils.log5(LOG_TAG, "Just before sending the Broadcast Receiver!!!!");
+        Log.v(LOG_TAG, "Is mContext null: " + (mContext == null));
+        Log.v(LOG_TAG, "Is intent null: " + (intent == null));
+
         LocalBroadcastManager.getInstance(mContext).sendBroadcast(intent);
     }
+
+//    private void sendMessageToActivity(String json) {
+//        Utils.log5(LOG_TAG, "sendMessageToActivity: " + json);
+//
+//        Intent intent = new Intent("HistoricalDetailData");
+//        intent.putExtra(StockIntentService.INTENT_DETAIL, json);
+//
+//        LocalBroadcastManager.getInstance(mContext).sendBroadcast(intent);
+//    }
 }

@@ -1,16 +1,18 @@
 package com.sam_chordas.android.stockhawk.ui;
 
 import android.app.LoaderManager;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.CursorLoader;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.Loader;
 import android.database.Cursor;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
-import android.net.NetworkRequest;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.app.ActionBar;
 import android.os.Bundle;
@@ -52,7 +54,7 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
      */
     private CharSequence mTitle;
     private Intent mServiceIntent;
-    private HistoricalReciever mHistReciever;
+    private HistoricalReceiver mHistReciever;
     private ItemTouchHelper mItemTouchHelper;
     private static final int CURSOR_LOADER_ID = 0;
     private QuoteCursorAdapter mCursorAdapter;
@@ -187,8 +189,9 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
         
         // Setup BroadcastReciever to get data from service
         // when user clicks on a Stock, and to launch new activity.
-        LocalBroadcastManager.getInstance(getContext())
-            .registerReceiver(mMessageReceiver, new IntentFilter("HistoricalDetailData"));
+        Utils.log5(LOG_TAG, "Just before registering the Broadcast Receiver!!!!");
+        mHistReciever = new HistoricalReceiver();
+        LocalBroadcastManager.getInstance(this).registerReceiver(mHistReciever, new IntentFilter("StockClicked"));
     }
 
 
@@ -302,12 +305,18 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
         mCursorAdapter.swapCursor(null);
     }
     
-    protected class HistoricalReciever extends BroadcastReceiver {
+    protected class HistoricalReceiver extends BroadcastReceiver {
         
         @Override
-        public void onMessageRecived(Context context, Intent intent) {
+        public void onReceive(Context context, Intent intent) {
             String data = intent.getStringExtra(StockIntentService.INTENT_DETAIL);
-            Log.v(LOG_TAG, "onMessageRecived: " + data);
+            String stock = intent.getStringExtra("stock_clicked");
+            Log.v(LOG_TAG, "onMessageRecived: " + stock);
+
+            // Testing activity launch and sending info
+            Intent details = new Intent(context, StocksDetailActivity.class);
+            details.putExtra("stock_clicked", stock);
+            startActivity(details);
             
             // Get JSON data
             // Parse JSON data?
