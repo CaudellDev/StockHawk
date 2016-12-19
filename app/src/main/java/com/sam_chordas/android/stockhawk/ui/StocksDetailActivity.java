@@ -25,8 +25,8 @@ public class StocksDetailActivity extends Activity {
     Intent intent = getIntent();
 //    String symbol = intent.getStringExtra(StockIntentService.INTENT_SYMBOL);
     String symbol = intent.getStringExtra("stock_clicked");
-    TextView symbolDisplay = (TextView) findViewById(R.id.details_debug_textview);
-    symbolDisplay.append(symbol);
+//    TextView symbolDisplay = (TextView) findViewById(R.id.details_debug_textview);
+//    symbolDisplay.append(symbol);
     
     GraphView testGraph = (GraphView) findViewById(R.id.test_point_graph);
     
