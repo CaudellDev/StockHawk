@@ -12,10 +12,42 @@
 
     <GridLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
-
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:collumnCount="2"
+        android:rowCount="2"
+        android:layout_gravity="top"
+        >
+        
+        <TextView android:id="@+id/detail_stock_label"
+              android:layout_width="wrap_content"
+              android:layout_height="wrap_content"
+              android:row="0" android:collumn="0"
+              android:text="Stock: "/>
+        
+        <TextView android:id="@+id/detail_stock"
+              android:layout_width="wrap_content"
+              android:layout_height="wrap_content"
+              android:row="0" android:collumn="1"
+              android:text="GOOG"/>
+        
+        <TextView android:id="@+id/detail_value_label"
+              android:layout_width="wrap_content"
+              android:layout_height="wrap_content"
+              android:row="1" android:collumn="0"
+              android:text="Value: "/>
+        
+        <TextView android:id="@+id/detail_value"
+              android:layout_width="wrap_content"
+              android:layout_height="wrap_content"
+              android:row="1" android:collumn="1"
+              android:text="1^100"/>
+        
     </GridLayout>
 
-
+    <com.jjoe64.graphview.GraphView
+        android:id="@+id/test_point_graph"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent" />
 
 </android.support.design.widget.CoordinatorLayout>
