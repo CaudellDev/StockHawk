@@ -16,6 +16,7 @@ import com.google.android.gms.gcm.GcmTaskService;
 import com.google.android.gms.gcm.TaskParams;
 import com.sam_chordas.android.stockhawk.data.QuoteColumns;
 import com.sam_chordas.android.stockhawk.data.QuoteProvider;
+import com.sam_chordas.android.stockhawk.graph.HistoLineData;
 import com.sam_chordas.android.stockhawk.rest.QuoteCursorAdapter;
 import com.sam_chordas.android.stockhawk.rest.Utils;
 import com.squareup.okhttp.OkHttpClient;
@@ -181,8 +182,8 @@ public class StockTaskService extends GcmTaskService {
                     // The ContentResolver doesn't need this data,
                     // the MainActivity needs it to launch the
                     // DetailActivity.
-//                    sendMessageToActivity(getResponse);
-                    sendMessageToActivity(usedSymbol); // Send this for testing at first.
+                    sendMessageToActivity(getResponse);
+//                    sendMessageToActivity(usedSymbol); // Send this for testing at first.
                 } else {
                     try {
                         ContentValues contentValues = new ContentValues();
@@ -220,11 +221,14 @@ public class StockTaskService extends GcmTaskService {
         return null;
     }
 
-    private void sendMessageToActivity(String stock) {
-        Utils.log5(LOG_TAG, "sendMessageToActivity: " + stock);
+    private void sendMessageToActivity(String json) {
+        Utils.log5(LOG_TAG, "sendMessageToActivity: " + json);
 
-        Intent intent = new Intent("StockClicked");
-        intent.putExtra("stock_clicked", stock);
+//        Intent intent = new Intent("StockClicked");
+//        intent.putExtra("stock_clicked", stock);
+
+        Intent intent = new Intent(HistoLineData.HISTO_TAG);
+        intent.putExtra(HistoLineData.HISTO_TAG, json);
 
         Utils.log5(LOG_TAG, "Just before sending the Broadcast Receiver!!!!");
         Log.v(LOG_TAG, "Is mContext null: " + (mContext == null));

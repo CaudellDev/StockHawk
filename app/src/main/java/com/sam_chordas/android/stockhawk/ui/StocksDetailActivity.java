@@ -9,6 +9,7 @@ import com.jjoe64.graphview.GraphView;
 import com.jjoe64.graphview.series.DataPoint;
 import com.jjoe64.graphview.series.LineGraphSeries;
 import com.sam_chordas.android.stockhawk.R;
+import com.sam_chordas.android.stockhawk.graph.HistoLineData;
 import com.sam_chordas.android.stockhawk.service.StockIntentService;
 
 /**
@@ -20,15 +21,15 @@ public class StocksDetailActivity extends Activity {
   @Override
   protected void onCreate(Bundle onSavedInstanceState) {
     super.onCreate(onSavedInstanceState);
-    setContentView(R.layout.activity_temp_details);
+    setContentView(R.layout.activity_details);
     
     Intent intent = getIntent();
 //    String symbol = intent.getStringExtra(StockIntentService.INTENT_SYMBOL);
-    String symbol = intent.getStringExtra("stock_clicked");
-//    TextView symbolDisplay = (TextView) findViewById(R.id.details_debug_textview);
-//    symbolDisplay.append(symbol);
+    String symbol = intent.getStringExtra(HistoLineData.HISTO_TAG);
+//    TextView symbolDisplay = (TextView) findViewById(R.id.detail_stock);
+//    symbolDisplay.setText(symbol);
     
-    GraphView testGraph = (GraphView) findViewById(R.id.test_point_graph);
+    GraphView testGraph = (GraphView) findViewById(R.id.detail_point_graph);
     
     LineGraphSeries<DataPoint> series = new LineGraphSeries<>(new DataPoint[] {
             new DataPoint(0, 5),

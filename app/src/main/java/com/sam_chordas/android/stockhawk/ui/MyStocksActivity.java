@@ -31,6 +31,7 @@ import com.afollestad.materialdialogs.MaterialDialog;
 import com.sam_chordas.android.stockhawk.R;
 import com.sam_chordas.android.stockhawk.data.QuoteColumns;
 import com.sam_chordas.android.stockhawk.data.QuoteProvider;
+import com.sam_chordas.android.stockhawk.graph.HistoLineData;
 import com.sam_chordas.android.stockhawk.rest.QuoteCursorAdapter;
 import com.sam_chordas.android.stockhawk.rest.RecyclerViewItemClickListener;
 import com.sam_chordas.android.stockhawk.rest.Utils;
@@ -191,7 +192,7 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
         // when user clicks on a Stock, and to launch new activity.
         Utils.log5(LOG_TAG, "Just before registering the Broadcast Receiver!!!!");
         mHistReciever = new HistoricalReceiver();
-        LocalBroadcastManager.getInstance(this).registerReceiver(mHistReciever, new IntentFilter("StockClicked"));
+        LocalBroadcastManager.getInstance(this).registerReceiver(mHistReciever, new IntentFilter(HistoLineData.HISTO_TAG));
     }
 
 
@@ -309,13 +310,15 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
         
         @Override
         public void onReceive(Context context, Intent intent) {
-            String data = intent.getStringExtra(StockIntentService.INTENT_DETAIL);
-            String stock = intent.getStringExtra("stock_clicked");
-            Log.v(LOG_TAG, "onMessageRecived: " + stock);
+            String data = intent.getStringExtra(HistoLineData.HISTO_TAG);
+//            String stock = intent.getStringExtra(HistoLineData.HISTO_TAG);
+            Log.v(LOG_TAG, "onMessageRecived: " + data);
+
+            HistoLineData histoLineData = new HistoLineData(mContext, data);
 
             // Testing activity launch and sending info
             Intent details = new Intent(context, StocksDetailActivity.class);
-            details.putExtra("stock_clicked", stock);
+            details.putExtra(HistoLineData.HISTO_TAG, histoLineData);
             startActivity(details);
             
             // Get JSON data
