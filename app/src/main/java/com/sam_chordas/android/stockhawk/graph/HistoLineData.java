@@ -18,15 +18,16 @@ import java.util.Iterator;
  * Created by Tyler on 12/19/2016.
  */
 
-public class HistoLineData extends LineGraphSeries<DataPoint> implements Parcelable {
+public class HistoLineData extends LineGraphSeries<HistoPointData> implements Parcelable {
 
     private static final String LOG_TAG = HistoLineData.class.getSimpleName();
 
     public static final String HISTO_TAG = "histo_data";
 
     public HistoLineData(Context context, String json) {
-        ArrayList<JSONObject> jsonObjects = Utils.parseHistoricalJson(context, json);
-        // Convert to DataPoints and add to the LineData.......
+        ArrayList<HistoPointData> dailyData = Utils.parseHistoricalJson(context, json);
+        
+        // Do stuff...
     }
 
     public int describeContents() {
@@ -37,7 +38,7 @@ public class HistoLineData extends LineGraphSeries<DataPoint> implements Parcela
         // Add the array somehow....
         Iterator<DataPoint> values = getValues(getLowestValueX(), getHighestValueX());
         while (values.hasNext()) {
-            DataPoint val = values.next();
+            HistoPointData val = (HistoPointData) values.next();
             out.writeValue(val);
         }
     }
@@ -56,13 +57,17 @@ public class HistoLineData extends LineGraphSeries<DataPoint> implements Parcela
     private HistoLineData(Parcel in) {
         // Get an array, or loop and add each item
 //      mData = in.readInt();
-        ArrayList<DataPoint> values = new ArrayList<>();
+        ArrayList<HistoPointData> values = new ArrayList<>();
         for (int i = 0; i < in.dataSize(); i++) {
-            DataPoint val = (DataPoint) in.readValue(DataPoint.class.getClassLoader());
+            HistoPointData val = (HistoPointData) in.readValue(HistoPointData.class.getClassLoader());
 
-            Log.v(LOG_TAG, "Rebuilding HistoLineData Parcel. DataPoint " + i + ", " + val);
+            Log.v(LOG_TAG, "Rebuilding HistoLineData Parcel. HistoPointData " + i + ", " + val);
 
             values.add(val);
         }
+        
+        HistoPointData[] array = new HistoPointData[values.size()];
+        array = values.toArray(array);
+        resetData(array);
     }
 }
