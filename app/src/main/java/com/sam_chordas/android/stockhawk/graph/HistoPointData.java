@@ -1,6 +1,6 @@
 package com.sam_chordas.android.stockhawk.graph;
 
-public class HistoPointData implements DataPointInterface {
+public class HistoPointData implements DataPointInterface, Parselable {
     
     private String date;
     private String open;
@@ -52,4 +52,41 @@ public class HistoPointData implements DataPointInterface {
     public String getClose() { return close; }
     public String getVolume() { return volume; }
     public String getAdjClose() { return adj_close; }
+    
+    // #####--- Parcel Stuff ---#####
+    
+    public int describeContents() {
+         return 0;
+     }
+
+     public void writeToParcel(Parcel out, int flags) {
+         out.writeString(date);
+         out.writeString(open);
+         out.writeString(high);
+         out.writeString(low);
+         out.writeString(close);
+         out.writeString(volume);
+         out.writeString(adj_close);
+     }
+
+     public static final Parcelable.Creator<HistoPointData> CREATOR
+             = new Parcelable.Creator<HistoPointData>() {
+         public HistoPointData createFromParcel(Parcel in) {
+             return new HistoPointData(in);
+         }
+
+         public HistoPointData[] newArray(int size) {
+             return new HistoPointData[size];
+         }
+     };
+     
+     private HistoPointData(Parcel in) {
+         date = in.readString();
+         open = in.readString();
+         high = in.readString();
+         low = in.readString();
+         close = in.readString();
+         volume = in.readString();
+         adj_close = in.readString();
+     }
 }
