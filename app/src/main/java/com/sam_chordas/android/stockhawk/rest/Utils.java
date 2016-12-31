@@ -114,10 +114,10 @@ public class Utils {
         return builder.build();
     }
     
-    public static ArrayList<JSONObject> parseHistoricalJson(Context context, String json) {
+    public static ArrayList<HistoPointData> parseHistoricalJson(Context context, String json) {
         Log.v(LOG_TAG, "parseHistoricalJson data: " + json);
         
-        ArrayList<JSONObject> dailyData = new ArrayList<>();
+        ArrayList<HistoPointData> dailyData = new ArrayList<>();
         
         try {
             JSONObject jsonObj = new JSONObject(json);
@@ -133,7 +133,7 @@ public class Utils {
 
         return null;
     }
-
+    
     public static void log5(String TAG, String MSG) {
         for (int i = 0; i < 5; i ++) Log.v(TAG, "--|");
         Log.v(TAG, MSG);
