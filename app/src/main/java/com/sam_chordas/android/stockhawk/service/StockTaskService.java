@@ -144,8 +144,8 @@ public class StockTaskService extends GcmTaskService {
             usedSymbol = "(\"" + params.getExtras().getString(StockIntentService.INTENT_SYMBOL) + "\")";
 
             // TODO: Get actual dates
-            usedStDate = URL_STDATE + "\"" + "2016-11-21" + "\"";
-            usedEnDate = URL_ENDATE + "\"" + "2016-11-28" + "\"";
+            usedStDate = URL_STDATE + "\"" + "2016-11-01" + "\"";
+            usedEnDate = URL_ENDATE + "\"" + "2016-12-31" + "\"";
         } else {
             if (usedTag.isEmpty()) usedTag = "<empty>";
             Log.e(LOG_TAG, "This tag, " + usedTag + " was not recognized. Cannot complete the Task Service.");
@@ -222,7 +222,7 @@ public class StockTaskService extends GcmTaskService {
     }
 
     private void sendMessageToActivity(String json) {
-        Utils.log5(LOG_TAG, "sendMessageToActivity: " + json);
+//        Utils.log5(LOG_TAG, "sendMessageToActivity: " + json);
 
 //        Intent intent = new Intent("StockClicked");
 //        intent.putExtra("stock_clicked", stock);
@@ -230,9 +230,7 @@ public class StockTaskService extends GcmTaskService {
         Intent intent = new Intent(HistoLineData.HISTO_TAG);
         intent.putExtra(HistoLineData.HISTO_TAG, json);
 
-        Utils.log5(LOG_TAG, "Just before sending the Broadcast Receiver!!!!");
-        Log.v(LOG_TAG, "Is mContext null: " + (mContext == null));
-        Log.v(LOG_TAG, "Is intent null: " + (intent == null));
+        Log.v(LOG_TAG, "Just before sending the Broadcast Receiver!!!!");
 
         LocalBroadcastManager.getInstance(mContext).sendBroadcast(intent);
     }
