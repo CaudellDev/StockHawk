@@ -1,15 +1,11 @@
 package com.sam_chordas.android.stockhawk.graph;
 
-import android.content.Context;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.util.Log;
 
-import com.jjoe64.graphview.series.DataPoint;
 import com.jjoe64.graphview.series.LineGraphSeries;
 import com.sam_chordas.android.stockhawk.rest.Utils;
-
-import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -21,13 +17,22 @@ import java.util.Iterator;
 public class HistoLineData extends LineGraphSeries<HistoPointData> implements Parcelable {
 
     private static final String LOG_TAG = HistoLineData.class.getSimpleName();
-
     public static final String HISTO_TAG = "histo_data";
 
-    public HistoLineData(Context context, String json) {
-        ArrayList<HistoPointData> dailyData = Utils.parseHistoricalJson(context, json);
-        
-        // Do stuff...
+    private String symbol;
+
+    public HistoLineData(String json) {
+        ArrayList<HistoPointData> dailyData = Utils.parseHistoricalJson(json);
+        symbol = dailyData.get(0).getSymbol();
+
+        HistoPointData[] array = new HistoPointData[dailyData.size()];
+        array = dailyData.toArray(array);
+
+//        for (HistoPointData day : array) {
+//            Log.v(LOG_TAG, "getX: " + day.getX());
+//        }
+
+        resetData(array);
     }
 
     public int describeContents() {
@@ -35,16 +40,16 @@ public class HistoLineData extends LineGraphSeries<HistoPointData> implements Pa
     }
 
     public void writeToParcel(Parcel out, int flags) {
+        out.writeString(symbol);
         // Add the array somehow....
-        Iterator<DataPoint> values = getValues(getLowestValueX(), getHighestValueX());
+        Iterator<HistoPointData> values = getValues(getLowestValueX(), getHighestValueX());
         while (values.hasNext()) {
-            HistoPointData val = (HistoPointData) values.next();
-            out.writeValue(val);
+            HistoPointData val = values.next();
+            out.writeParcelable(val, flags);
         }
     }
 
-    public static final Parcelable.Creator<HistoLineData> CREATOR
-            = new Parcelable.Creator<HistoLineData>() {
+    public static final Parcelable.Creator<HistoLineData> CREATOR = new Parcelable.Creator<HistoLineData>() {
         public HistoLineData createFromParcel(Parcel in) {
             return new HistoLineData(in);
         }
@@ -57,11 +62,15 @@ public class HistoLineData extends LineGraphSeries<HistoPointData> implements Pa
     private HistoLineData(Parcel in) {
         // Get an array, or loop and add each item
 //      mData = in.readInt();
+
+        symbol = in.readString();
+
         ArrayList<HistoPointData> values = new ArrayList<>();
         for (int i = 0; i < in.dataSize(); i++) {
-            HistoPointData val = (HistoPointData) in.readValue(HistoPointData.class.getClassLoader());
+            HistoPointData val = in.readParcelable(HistoPointData.class.getClassLoader());
 
             Log.v(LOG_TAG, "Rebuilding HistoLineData Parcel. HistoPointData " + i + ", " + val);
+            if (val == null) break; // Parcel has a bunch of null elements for some reason - stop once that's reached.
 
             values.add(val);
         }

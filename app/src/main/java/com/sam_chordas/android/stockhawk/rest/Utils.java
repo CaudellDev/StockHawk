@@ -5,6 +5,8 @@ import android.content.Context;
 import android.util.Log;
 import com.sam_chordas.android.stockhawk.data.QuoteColumns;
 import com.sam_chordas.android.stockhawk.data.QuoteProvider;
+import com.sam_chordas.android.stockhawk.graph.HistoPointData;
+
 import java.util.ArrayList;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -114,7 +116,7 @@ public class Utils {
         return builder.build();
     }
     
-    public static ArrayList<HistoPointData> parseHistoricalJson(Context context, String json) {
+    public static ArrayList<HistoPointData> parseHistoricalJson(String json) {
         Log.v(LOG_TAG, "parseHistoricalJson data: " + json);
         
         ArrayList<HistoPointData> dailyData = new ArrayList<>();
@@ -122,18 +124,21 @@ public class Utils {
         try {
             JSONObject jsonObj = new JSONObject(json);
             jsonObj = jsonObj.getJSONObject("query").getJSONObject("results");
-            JSONArray jsonArr = jsonObj.getJSONArray("query");
+            JSONArray jsonArr = jsonObj.getJSONArray("quote");
             int length = jsonArr.length();
             for (int i = 0; i < length; i++) {
                 // Do stuff...
+                JSONObject currObj = jsonArr.optJSONObject(length - (i+1)); // I need to reverse the order so the date is acs
+                HistoPointData currPoint = new HistoPointData(currObj);
+                dailyData.add(currPoint);
             }
         } catch (JSONException e) {
             e.printStackTrace();
         }
 
-        return null;
+        return dailyData;
     }
-    
+
     public static void log5(String TAG, String MSG) {
         for (int i = 0; i < 5; i ++) Log.v(TAG, "--|");
         Log.v(TAG, MSG);

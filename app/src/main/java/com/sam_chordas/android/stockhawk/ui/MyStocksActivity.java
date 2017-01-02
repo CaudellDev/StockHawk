@@ -314,11 +314,14 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
 //            String stock = intent.getStringExtra(HistoLineData.HISTO_TAG);
             Log.v(LOG_TAG, "onMessageRecived: " + data);
 
-            HistoLineData histoLineData = new HistoLineData(mContext, data);
+            HistoLineData histoLineData = new HistoLineData(data);
+
+            Bundle extra = new Bundle();
+            extra.putParcelable(HistoLineData.HISTO_TAG, histoLineData);
 
             // Testing activity launch and sending info
             Intent details = new Intent(context, StocksDetailActivity.class);
-            details.putExtra(HistoLineData.HISTO_TAG, histoLineData);
+            details.putExtra(HistoLineData.HISTO_TAG, extra);
             startActivity(details);
             
             // Get JSON data
