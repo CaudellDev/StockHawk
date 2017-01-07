@@ -57,7 +57,8 @@ public class HistoPointData implements DataPointInterface, Parcelable {
         double x;
 
         try {
-            x = format.parse(date).getTime() * 100;
+            x = format.parse(date).getTime();
+            x = Math.floor(x);
         } catch (ParseException e) {
             e.printStackTrace();
             return 0;

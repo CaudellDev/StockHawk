@@ -26,6 +26,8 @@ public class Utils {
         JSONObject jsonObject = null;
         JSONArray resultsArray = null;
 
+
+
         try {
             jsonObject = new JSONObject(JSON);
             if (jsonObject != null && jsonObject.length() != 0) {
@@ -35,7 +37,7 @@ public class Utils {
                 if (count == 1) {
                     jsonObject = jsonObject.getJSONObject("results");
 
-                    jsonObject = jsonObject.getJSONObject("query");
+                    jsonObject = jsonObject.getJSONObject("quote");
                     batchOperations.add(buildBatchOperation(jsonObject));
 
 //                    Object queryTemp = jsonObject.get("query");
@@ -63,6 +65,7 @@ public class Utils {
             }
         } catch (JSONException e) {
             Log.e(LOG_TAG, "String to JSON failed: " + e);
+            e.printStackTrace();
         }
         return batchOperations;
     }
@@ -142,5 +145,9 @@ public class Utils {
     public static void log5(String TAG, String MSG) {
         for (int i = 0; i < 5; i ++) Log.v(TAG, "--|");
         Log.v(TAG, MSG);
+    }
+
+    public static void logJson(String TAG, String MSG, String JSON) {
+
     }
 }

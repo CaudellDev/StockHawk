@@ -69,8 +69,8 @@ public class HistoLineData extends LineGraphSeries<HistoPointData> implements Pa
         for (int i = 0; i < in.dataSize(); i++) {
             HistoPointData val = in.readParcelable(HistoPointData.class.getClassLoader());
 
-            Log.v(LOG_TAG, "Rebuilding HistoLineData Parcel. HistoPointData " + i + ", " + val);
             if (val == null) break; // Parcel has a bunch of null elements for some reason - stop once that's reached.
+            Log.v(LOG_TAG, "Rebuilding HistoLineData Parcel. HistoPointData " + i + ", " + val.getX());
 
             values.add(val);
         }

@@ -7,6 +7,7 @@ import android.support.design.widget.Snackbar;
 import android.widget.TextView;
 
 import com.jjoe64.graphview.GraphView;
+import com.jjoe64.graphview.helper.DateAsXAxisLabelFormatter;
 import com.jjoe64.graphview.series.DataPoint;
 import com.jjoe64.graphview.series.LineGraphSeries;
 import com.sam_chordas.android.stockhawk.R;
@@ -67,8 +68,16 @@ public class StocksDetailActivity extends Activity {
         valueView.setText(close);
 
         GraphView testGraph = (GraphView) findViewById(R.id.detail_point_graph);
+
         testGraph.addSeries(histoLineData);
 
+        testGraph.getGridLabelRenderer().setLabelFormatter(new DateAsXAxisLabelFormatter(this));
+        testGraph.getGridLabelRenderer().setNumHorizontalLabels(3);
+
+        testGraph.getViewport().setMinX(histoLineData.getLowestValueX());
+        testGraph.getViewport().setMaxX(histoLineData.getHighestValueX());
+        testGraph.getViewport().setXAxisBoundsManual(true);
+        testGraph.getGridLabelRenderer().setHumanRounding(false);
     }
 
     public void noDataBackup() {
