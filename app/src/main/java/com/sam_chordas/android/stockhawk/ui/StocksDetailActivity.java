@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.Snackbar;
+import android.support.v7.app.AppCompatActivity;
 import android.widget.TextView;
 
 import com.jjoe64.graphview.GraphView;
@@ -23,7 +24,7 @@ import java.util.Iterator;
  * Created by Tyler on 10/24/2016.
  */
 
-public class StocksDetailActivity extends Activity {
+public class StocksDetailActivity extends AppCompatActivity {
 
     private ArrayList<HistoPointData> dailyData;
     private HistoPointData present;
