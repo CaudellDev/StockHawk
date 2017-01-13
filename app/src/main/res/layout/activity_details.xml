@@ -60,6 +60,18 @@
             android:layout_columnWeight="1"
             android:layout_gravity="fill"
             android:layout_rowWeight="1"/>
+        
+        <TextView
+            android:id="@+id/detail_volume_label"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            andrid:layout_gravity="fill" />
+        
+        <TextView
+            android:id="@+id/detail_volume_value"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            andrid:layout_gravity="fill" />
 
     </GridLayout>
 
