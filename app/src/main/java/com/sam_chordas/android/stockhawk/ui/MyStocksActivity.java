@@ -62,6 +62,7 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
     private Context mContext;
     private Cursor mCursor;
     boolean isConnected;
+    boolean init = true;
 
     private RecyclerView mRecyclerView;
 
@@ -77,10 +78,11 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
         // The intent service is for executing immediate pulls from the Yahoo API
         // GCMTaskService can only schedule tasks, they cannot execute immediately
         mServiceIntent = new Intent(this, StockIntentService.class);
-        if (savedInstanceState == null) {
+        if (savedInstanceState == null || init) {
             // Run the initialize task service so that some stocks appear upon an empty database
             mServiceIntent.putExtra("tag", "init");
             if (isConnected){
+                init = false;
                 startService(mServiceIntent);
             } else {
                 // Empty view visible code here

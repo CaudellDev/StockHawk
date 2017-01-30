@@ -5,4 +5,8 @@
   <color name="material_red_700">#D50000</color>
   <color name="material_green_700">#00C853</color>
   <color name="grey">#EEEEEE</color>
+  <color name="dark_grey">#616161</color>
+  <color name="material_bgrey_500">#607D8B</color>
+  <color name="material_bgrey_700">#455A64</color>
+  <color name="material_black_900">#212121</color>
 </resources>
