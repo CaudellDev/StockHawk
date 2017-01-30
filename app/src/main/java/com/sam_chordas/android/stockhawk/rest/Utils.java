@@ -147,6 +147,14 @@ public class Utils {
         return dailyData;
     }
 
+    public static boolean isJsonValid(String json) {
+        int nulls = 0;
+
+        // Do stuff....
+
+        return nulls > 5;
+    }
+
     public static void log5(String TAG, String MSG) {
         for (int i = 0; i < 5; i ++) Log.v(TAG, "--|");
         Log.v(TAG, MSG);
