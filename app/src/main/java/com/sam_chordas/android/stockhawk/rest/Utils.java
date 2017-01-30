@@ -151,6 +151,7 @@ public class Utils {
         int nulls = 0;
 
         // Do stuff....
+        // https://query.yahooapis.com/v1/public/yql?q=select+*+from+yahoo.finance.quotes+where+symbol+in+%28%22ddgj%22%29&format=json&diagnostics=true&env=store://datatables.org/alltableswithkeys&callback=
 
         return nulls > 5;
     }
