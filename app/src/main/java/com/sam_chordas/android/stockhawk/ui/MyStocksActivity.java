@@ -46,6 +46,8 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
 
     private static final String LOG_TAG = MyStocksActivity.class.getSimpleName();
 
+    public static final String BAD_STOCK_TAG = "bad_stock_broadcast";
+
     /**
      * Fragment managing the behaviors, interactions and presentation of the navigation drawer.
      */
@@ -55,7 +57,7 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
      */
     private CharSequence mTitle;
     private Intent mServiceIntent;
-    private HistoricalReceiver mHistReciever;
+    private TaskReceiver mTaskReceiver;
     private ItemTouchHelper mItemTouchHelper;
     private static final int CURSOR_LOADER_ID = 0;
     private QuoteCursorAdapter mCursorAdapter;
@@ -65,6 +67,7 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
     boolean init = true;
 
     private RecyclerView mRecyclerView;
+    private FloatingActionButton mFab;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -125,8 +128,8 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
         mRecyclerView.setAdapter(mCursorAdapter);
 
 
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
+        mFab = (FloatingActionButton) findViewById(R.id.fab);
+        mFab.setOnClickListener(new View.OnClickListener() {
             @Override public void onClick(View v) {
                 if (isConnected) {
                     new MaterialDialog.Builder(mContext).title(R.string.symbol_search)
@@ -193,8 +196,8 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
         // Setup BroadcastReciever to get data from service
         // when user clicks on a Stock, and to launch new activity.
         Utils.log5(LOG_TAG, "Just before registering the Broadcast Receiver!!!!");
-        mHistReciever = new HistoricalReceiver();
-        LocalBroadcastManager.getInstance(this).registerReceiver(mHistReciever, new IntentFilter(HistoLineData.HISTO_TAG));
+        mTaskReceiver = new TaskReceiver();
+        LocalBroadcastManager.getInstance(this).registerReceiver(mTaskReceiver, new IntentFilter(TaskReceiver.RECEIVER_TAG));
     }
 
 
@@ -308,23 +311,43 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
         mCursorAdapter.swapCursor(null);
     }
     
-    protected class HistoricalReceiver extends BroadcastReceiver {
+    public class TaskReceiver extends BroadcastReceiver {
+
+        public static final String RECEIVER_TAG = "task_receiver_tag";
         
         @Override
         public void onReceive(Context context, Intent intent) {
-            String data = intent.getStringExtra(HistoLineData.HISTO_TAG);
-//            String stock = intent.getStringExtra(HistoLineData.HISTO_TAG);
-            Log.v(LOG_TAG, "onMessageRecived: " + data);
 
-            HistoLineData histoLineData = new HistoLineData(data);
+            String tag = intent.getStringExtra(RECEIVER_TAG);
 
-            Bundle extra = new Bundle();
-            extra.putParcelable(HistoLineData.HISTO_TAG, histoLineData);
+            switch (tag) {
+                case HistoLineData.HISTO_TAG:
 
-            // Testing activity launch and sending info
-            Intent details = new Intent(context, StocksDetailActivity.class);
-            details.putExtra(HistoLineData.HISTO_TAG, extra);
-            startActivity(details);
+                    String data = intent.getStringExtra(HistoLineData.HISTO_TAG);
+                    Log.v(LOG_TAG, "onMessageRecived: " + data);
+
+                    HistoLineData histoLineData = new HistoLineData(data);
+
+                    Bundle extra = new Bundle();
+                    extra.putParcelable(HistoLineData.HISTO_TAG, histoLineData);
+
+                    // Testing activity launch and sending info
+                    Intent details = new Intent(context, StocksDetailActivity.class);
+                    details.putExtra(HistoLineData.HISTO_TAG, extra);
+                    startActivity(details);
+
+                    break;
+                case BAD_STOCK_TAG:
+
+
+
+                    break;
+                default:
+                    Log.e(LOG_TAG, "Unknown tag: " + tag);
+                    return;
+            }
+
+
             
             // Get JSON data
             // Parse JSON data?

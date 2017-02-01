@@ -150,20 +150,24 @@ public class Utils {
     public static boolean isJsonValid(String json) {
         int nulls = 0;
 
-        // Do stuff....
-        JSONObject obj = new JSONObject(json);
-        obj = obj.getJSONObject("query").getJSONObject("results").getJSONObject("quote");
-        
-        // Increment nulls each time it equals null.
-        if (obj.getString("Change") == null) nulls++;
-        if (obj.getString("Bid") == null) nulls++;
-        if (obj.getString("ChangeinPercent") == null) nulls++;
-        if (obj.getString("Volume") == null) nulls++;
-        if (obj.getString("Open") == null) nulls++;
-        if (obj.getString("Close") == null) nulls++;
+        JSONObject obj = null;
+
+        try {
+            obj = new JSONObject(json);
+            obj = obj.getJSONObject("query").getJSONObject("results").getJSONObject("quote");
+
+            // Increment nulls each time it equals null.
+            if (obj.getString("Change") == null) nulls++;
+            if (obj.getString("Bid") == null) nulls++;
+            if (obj.getString("ChangeinPercent") == null) nulls++;
+            if (obj.getString("Volume") == null) nulls++;
+            if (obj.getString("Open") == null) nulls++;
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
         
         // https://query.yahooapis.com/v1/public/yql?q=select+*+from+yahoo.finance.quotes+where+symbol+in+%28%22ddgj%22%29&format=json&diagnostics=true&env=store://datatables.org/alltableswithkeys&callback=
-        return nulls > 3; // If it's more than 3, it's probably an invalid stock. Will experiment with other values too.
+        return 3 < nulls; // If it's more than 3, it's probably an invalid stock. Will experiment with other values too.
     }
 
     public static void log5(String TAG, String MSG) {

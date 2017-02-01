@@ -9,7 +9,6 @@ import android.database.DatabaseUtils;
 import android.os.RemoteException;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
-import android.widget.Toast;
 
 import com.google.android.gms.gcm.GcmNetworkManager;
 import com.google.android.gms.gcm.GcmTaskService;
@@ -17,11 +16,13 @@ import com.google.android.gms.gcm.TaskParams;
 import com.sam_chordas.android.stockhawk.data.QuoteColumns;
 import com.sam_chordas.android.stockhawk.data.QuoteProvider;
 import com.sam_chordas.android.stockhawk.graph.HistoLineData;
-import com.sam_chordas.android.stockhawk.rest.QuoteCursorAdapter;
 import com.sam_chordas.android.stockhawk.rest.Utils;
+import com.sam_chordas.android.stockhawk.ui.MyStocksActivity;
 import com.squareup.okhttp.OkHttpClient;
 import com.squareup.okhttp.Request;
 import com.squareup.okhttp.Response;
+import com.squareup.okhttp.internal.Util;
+
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
@@ -99,57 +100,61 @@ public class StockTaskService extends GcmTaskService {
         String usedEnDate = "";
 
         // Combine these because they both need a query cursor?
-        if (usedTag.equals("init") || usedTag.equals("periodic")) {
-            isUpdate = true;
-            usedApi = URL_QUOTE;
+        switch (usedTag) {
+            case "init":
+            case "periodic":
+                isUpdate = true;
+                usedApi = URL_QUOTE;
 
-            initQueryCursor = mContext.getContentResolver().query(
+                initQueryCursor = mContext.getContentResolver().query(
                         QuoteProvider.Quotes.CONTENT_URI,
-                        new String[] { "Distinct " + QuoteColumns.SYMBOL }, 
+                        new String[] { "Distinct " + QuoteColumns.SYMBOL },
                         null, null, null);
 
-            // If it's empty, initialize it with some basic stocks.
-            if (initQueryCursor.getCount() == 0 || initQueryCursor == null) {
-                // Init task. Populates DB with quotes for the symbols seen below
-                usedSymbol = URL_INIT;
+                // If it's empty, initialize it with some basic stocks.
+                if (initQueryCursor.getCount() == 0 || initQueryCursor == null) {
+                    // Init task. Populates DB with quotes for the symbols seen below
+                    usedSymbol = URL_INIT;
 
-            } else if (initQueryCursor != null) { // Periodic updates?
-                DatabaseUtils.dumpCursor(initQueryCursor);
-                initQueryCursor.moveToFirst();
+                } else if (initQueryCursor != null) { // Periodic updates?
+                    DatabaseUtils.dumpCursor(initQueryCursor);
+                    initQueryCursor.moveToFirst();
 
-                mStoredSymbols.append("("); // Starting parenth
+                    mStoredSymbols.append("("); // Starting parenth
 
-                // Go through all of the Stocks and add them to a StringBuilder instance.
-                for (int i = 0; i < initQueryCursor.getCount(); i++) {
-                    mStoredSymbols.append("\""+
-                        initQueryCursor.getString(initQueryCursor.getColumnIndex("symbol"))+"\",");
+                    // Go through all of the Stocks and add them to a StringBuilder instance.
+                    for (int i = 0; i < initQueryCursor.getCount(); i++) {
+                        mStoredSymbols.append("\""+
+                                initQueryCursor.getString(initQueryCursor.getColumnIndex("symbol"))+"\",");
                         initQueryCursor.moveToNext();
+                    }
+
+                    // Not sure what this does?? Replaces the last character with a ")"?
+                    mStoredSymbols.replace(mStoredSymbols.length() - 1, mStoredSymbols.length(), ")"); // Ending Parenth?
+
+                    usedSymbol = mStoredSymbols.toString();
                 }
+                break;
+            case "add":
+                isUpdate = false;
+                usedApi = URL_QUOTE;
 
-                // Not sure what this does?? Replaces the last character with a ")"?
-                mStoredSymbols.replace(mStoredSymbols.length() - 1, mStoredSymbols.length(), ")"); // Ending Parenth?
+                // get symbol from params.getExtra and build query
+                String stockInput = params.getExtras().getString("symbol");
+                usedSymbol = "(\"" + stockInput + "\")";
+                break;
+            case "detail":
+                usedApi = URL_HISTORY;
+                usedSymbol = "(\"" + params.getExtras().getString(StockIntentService.INTENT_SYMBOL) + "\")";
 
-                usedSymbol = mStoredSymbols.toString();
-            }
-        } else if (usedTag.equals("add")) {
-            // TODO: Check for the position param in here? Or was the selected symbol passed into params?
-            isUpdate = false;
-            usedApi = URL_QUOTE;
-
-            // get symbol from params.getExtra and build query
-            String stockInput = params.getExtras().getString("symbol");
-            usedSymbol = "(\"" + stockInput + "\")";
-        } else if (usedTag.equals("detail")) {
-            usedApi = URL_HISTORY;
-            usedSymbol = "(\"" + params.getExtras().getString(StockIntentService.INTENT_SYMBOL) + "\")";
-
-            // TODO: Get actual dates
-            usedStDate = URL_STDATE + "\"" + "2016-11-01" + "\"";
-            usedEnDate = URL_ENDATE + "\"" + "2016-12-31" + "\"";
-        } else {
-            if (usedTag.isEmpty()) usedTag = "<empty>";
-            Log.e(LOG_TAG, "This tag, " + usedTag + " was not recognized. Cannot complete the Task Service.");
-            return GcmNetworkManager.RESULT_FAILURE;
+                // TODO: Get actual dates
+                usedStDate = URL_STDATE + "\"" + "2016-11-01" + "\"";
+                usedEnDate = URL_ENDATE + "\"" + "2016-12-31" + "\"";
+                break;
+            default:
+                if (usedTag.isEmpty()) usedTag = "<empty>";
+                Log.e(LOG_TAG, "This tag, " + usedTag + " was not recognized. Cannot complete the Task Service.");
+                return GcmNetworkManager.RESULT_FAILURE;
         }
         
         // Build the URL here, all at once
@@ -179,12 +184,21 @@ public class StockTaskService extends GcmTaskService {
 
                 Log.i(LOG_TAG, "URL: " + urlString + "\n\n");
                 Log.i(LOG_TAG, "Get Response: " + getResponse);
-                
+
+                if (usedTag.equals("add")) {
+                    // We want to check if the stock is valid.
+                    // If it's not, we need to tell the activity and tell the user.
+                    if (!Utils.isJsonValid(getResponse)) {
+                        sendMessageToActivity(params.getExtras().getString(StockIntentService.INTENT_SYMBOL), usedTag);
+                        return result;
+                    }
+                }
+
                 if (usedTag.equals("detail")) {
                     // The ContentResolver doesn't need this data,
                     // the MainActivity needs it to launch the
                     // DetailActivity.
-                    sendMessageToActivity(getResponse);
+                    sendMessageToActivity(getResponse, usedTag);
 //                    sendMessageToActivity(usedSymbol); // Send this for testing at first.
                 } else {
                     try {
@@ -223,14 +237,27 @@ public class StockTaskService extends GcmTaskService {
         return null;
     }
 
-    private void sendMessageToActivity(String json) {
+    private void sendMessageToActivity(String msg, String tag) {
 //        Utils.log5(LOG_TAG, "sendMessageToActivity: " + json);
 
 //        Intent intent = new Intent("StockClicked");
 //        intent.putExtra("stock_clicked", stock);
 
-        Intent intent = new Intent(HistoLineData.HISTO_TAG);
-        intent.putExtra(HistoLineData.HISTO_TAG, json);
+        Intent intent = new Intent(MyStocksActivity.TaskReceiver.RECEIVER_TAG);
+
+        switch (tag) {
+            case "add":
+                intent.putExtra(MyStocksActivity.TaskReceiver.RECEIVER_TAG, MyStocksActivity.BAD_STOCK_TAG);
+                intent.putExtra(MyStocksActivity.BAD_STOCK_TAG, msg);
+                break;
+            case "detail":
+                intent.putExtra(MyStocksActivity.TaskReceiver.RECEIVER_TAG, HistoLineData.HISTO_TAG);
+                intent.putExtra(HistoLineData.HISTO_TAG, msg);
+                break;
+            default:
+                Log.e(LOG_TAG, "Message to Activity - TAG: " + tag);
+        }
+
 
         Log.v(LOG_TAG, "Just before sending the Broadcast Receiver!!!!");
 
