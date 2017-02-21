@@ -1,11 +1,11 @@
-package com.sam_chordas.android.stockhawk.graph;
+package com.reddev_udacity.android.stockhawk.graph;
 
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.util.Log;
 
 import com.jjoe64.graphview.series.LineGraphSeries;
-import com.sam_chordas.android.stockhawk.rest.Utils;
+import com.reddev_udacity.android.stockhawk.rest.Utils;
 
 import java.util.ArrayList;
 import java.util.Iterator;

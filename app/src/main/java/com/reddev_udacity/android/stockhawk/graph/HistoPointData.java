@@ -1,11 +1,11 @@
-package com.sam_chordas.android.stockhawk.graph;
+package com.reddev_udacity.android.stockhawk.graph;
 
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.util.Log;
 
 import com.jjoe64.graphview.series.DataPointInterface;
-import com.sam_chordas.android.stockhawk.rest.Utils;
+import com.reddev_udacity.android.stockhawk.rest.Utils;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -13,7 +13,6 @@ import org.json.JSONObject;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.Locale;
 
 public class HistoPointData implements DataPointInterface, Parcelable {

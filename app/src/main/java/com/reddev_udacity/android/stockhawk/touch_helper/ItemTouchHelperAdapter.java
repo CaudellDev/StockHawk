@@ -1,7 +1,6 @@
-package com.sam_chordas.android.stockhawk.touch_helper;
+package com.reddev_udacity.android.stockhawk.touch_helper;
 
 import android.support.v7.widget.RecyclerView;
-import android.view.View;
 
 /**
  * Created by sam_chordas on 10/6/15.

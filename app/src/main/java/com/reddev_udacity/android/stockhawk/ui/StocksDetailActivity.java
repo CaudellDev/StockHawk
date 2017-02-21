@@ -1,6 +1,5 @@
-package com.sam_chordas.android.stockhawk.ui;
+package com.reddev_udacity.android.stockhawk.ui;
 
-import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
@@ -10,13 +9,10 @@ import android.widget.TextView;
 
 import com.jjoe64.graphview.DefaultLabelFormatter;
 import com.jjoe64.graphview.GraphView;
-import com.jjoe64.graphview.helper.DateAsXAxisLabelFormatter;
-import com.jjoe64.graphview.series.DataPoint;
-import com.jjoe64.graphview.series.LineGraphSeries;
-import com.sam_chordas.android.stockhawk.R;
-import com.sam_chordas.android.stockhawk.graph.HistoLineData;
-import com.sam_chordas.android.stockhawk.graph.HistoPointData;
-import com.sam_chordas.android.stockhawk.service.StockIntentService;
+import com.reddev_udacity.android.stockhawk.R;
+import com.reddev_udacity.android.stockhawk.graph.HistoLineData;
+import com.reddev_udacity.android.stockhawk.graph.HistoPointData;
+import com.reddev_udacity.android.stockhawk.service.StockIntentService;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;

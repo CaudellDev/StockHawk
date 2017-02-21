@@ -1,11 +1,10 @@
-package com.sam_chordas.android.stockhawk.rest;
+package com.reddev_udacity.android.stockhawk.rest;
 
 import android.content.ContentProviderOperation;
-import android.content.Context;
 import android.util.Log;
-import com.sam_chordas.android.stockhawk.data.QuoteColumns;
-import com.sam_chordas.android.stockhawk.data.QuoteProvider;
-import com.sam_chordas.android.stockhawk.graph.HistoPointData;
+import com.reddev_udacity.android.stockhawk.data.QuoteColumns;
+import com.reddev_udacity.android.stockhawk.data.QuoteProvider;
+import com.reddev_udacity.android.stockhawk.graph.HistoPointData;
 
 import java.util.ArrayList;
 import java.util.Locale;
@@ -150,24 +149,30 @@ public class Utils {
     public static boolean isJsonValid(String json) {
         int nulls = 0;
 
-        JSONObject obj = null;
+        JSONObject obj;
 
         try {
             obj = new JSONObject(json);
             obj = obj.getJSONObject("query").getJSONObject("results").getJSONObject("quote");
 
+//            Utils.log5(LOG_TAG, "isJsonValid - JSON String quote: " + obj);
+//            Log.v(LOG_TAG, "isJsonValid - JSON String, is change null: " + (obj.getString("Change") == null));
+//            Log.v(LOG_TAG, "isJsonValid - JSON String, is change null: " + (obj.isNull("Change")));
+
             // Increment nulls each time it equals null.
-            if (obj.getString("Change") == null) nulls++;
-            if (obj.getString("Bid") == null) nulls++;
-            if (obj.getString("ChangeinPercent") == null) nulls++;
-            if (obj.getString("Volume") == null) nulls++;
-            if (obj.getString("Open") == null) nulls++;
+            if (obj.isNull("Change")) nulls++;
+            if (obj.isNull("Bid")) nulls++;
+            if (obj.isNull("ChangeinPercent")) nulls++;
+            if (obj.isNull("Volume")) nulls++;
+            if (obj.isNull("Open")) nulls++;
         } catch (JSONException e) {
             e.printStackTrace();
         }
-        
+
+        Utils.log5(LOG_TAG, "isJsonValid - nulls: " + nulls + ", valid: " + (nulls <= 3));
+
         // https://query.yahooapis.com/v1/public/yql?q=select+*+from+yahoo.finance.quotes+where+symbol+in+%28%22ddgj%22%29&format=json&diagnostics=true&env=store://datatables.org/alltableswithkeys&callback=
-        return 3 < nulls; // If it's more than 3, it's probably an invalid stock. Will experiment with other values too.
+        return nulls <= 3; // If it's more than 3, it's probably an invalid stock. Will experiment with other values too.
     }
 
     public static void log5(String TAG, String MSG) {
@@ -176,6 +181,5 @@ public class Utils {
     }
 
     public static void logJson(String TAG, String MSG, String JSON) {
-
     }
 }

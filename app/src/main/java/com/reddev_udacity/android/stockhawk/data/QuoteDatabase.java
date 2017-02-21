@@ -1,4 +1,4 @@
-package com.sam_chordas.android.stockhawk.data;
+package com.reddev_udacity.android.stockhawk.data;
 
 import net.simonvt.schematic.annotation.Database;
 import net.simonvt.schematic.annotation.Table;

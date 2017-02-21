@@ -1,4 +1,4 @@
-package com.sam_chordas.android.stockhawk.rest;
+package com.reddev_udacity.android.stockhawk.rest;
 
 import android.content.Context;
 import android.content.Intent;
@@ -14,12 +14,12 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import com.sam_chordas.android.stockhawk.R;
-import com.sam_chordas.android.stockhawk.data.QuoteColumns;
-import com.sam_chordas.android.stockhawk.data.QuoteProvider;
-import com.sam_chordas.android.stockhawk.service.StockIntentService;
-import com.sam_chordas.android.stockhawk.touch_helper.ItemTouchHelperAdapter;
-import com.sam_chordas.android.stockhawk.touch_helper.ItemTouchHelperViewHolder;
+import com.reddev_udacity.android.stockhawk.R;
+import com.reddev_udacity.android.stockhawk.data.QuoteColumns;
+import com.reddev_udacity.android.stockhawk.data.QuoteProvider;
+import com.reddev_udacity.android.stockhawk.service.StockIntentService;
+import com.reddev_udacity.android.stockhawk.touch_helper.ItemTouchHelperAdapter;
+import com.reddev_udacity.android.stockhawk.touch_helper.ItemTouchHelperViewHolder;
 
 /**
  * Created by sam_chordas on 10/6/15.

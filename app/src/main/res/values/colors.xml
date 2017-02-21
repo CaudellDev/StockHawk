@@ -9,4 +9,5 @@
   <color name="material_bgrey_500">#607D8B</color>
   <color name="material_bgrey_700">#455A64</color>
   <color name="material_black_900">#212121</color>
+  <color name="colorAccent">#AAAAAA</color>
 </resources>

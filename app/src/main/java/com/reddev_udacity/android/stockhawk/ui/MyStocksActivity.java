@@ -1,4 +1,4 @@
-package com.sam_chordas.android.stockhawk.ui;
+package com.reddev_udacity.android.stockhawk.ui;
 
 import android.app.LoaderManager;
 import android.content.BroadcastReceiver;
@@ -28,19 +28,19 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
 import com.afollestad.materialdialogs.MaterialDialog;
-import com.sam_chordas.android.stockhawk.R;
-import com.sam_chordas.android.stockhawk.data.QuoteColumns;
-import com.sam_chordas.android.stockhawk.data.QuoteProvider;
-import com.sam_chordas.android.stockhawk.graph.HistoLineData;
-import com.sam_chordas.android.stockhawk.rest.QuoteCursorAdapter;
-import com.sam_chordas.android.stockhawk.rest.RecyclerViewItemClickListener;
-import com.sam_chordas.android.stockhawk.rest.Utils;
-import com.sam_chordas.android.stockhawk.service.StockIntentService;
-import com.sam_chordas.android.stockhawk.service.StockTaskService;
+import com.reddev_udacity.android.stockhawk.R;
+import com.reddev_udacity.android.stockhawk.data.QuoteColumns;
+import com.reddev_udacity.android.stockhawk.data.QuoteProvider;
+import com.reddev_udacity.android.stockhawk.graph.HistoLineData;
+import com.reddev_udacity.android.stockhawk.rest.QuoteCursorAdapter;
+import com.reddev_udacity.android.stockhawk.rest.RecyclerViewItemClickListener;
+import com.reddev_udacity.android.stockhawk.rest.Utils;
+import com.reddev_udacity.android.stockhawk.service.StockIntentService;
+import com.reddev_udacity.android.stockhawk.service.StockTaskService;
 import com.google.android.gms.gcm.GcmNetworkManager;
 import com.google.android.gms.gcm.PeriodicTask;
 import com.google.android.gms.gcm.Task;
-import com.sam_chordas.android.stockhawk.touch_helper.SimpleItemTouchHelperCallback;
+import com.reddev_udacity.android.stockhawk.touch_helper.SimpleItemTouchHelperCallback;
 
 public class MyStocksActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor> {
 
@@ -63,6 +63,7 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
     private QuoteCursorAdapter mCursorAdapter;
     private Context mContext;
     private Cursor mCursor;
+    private boolean errorDialogMsg;
     boolean isConnected;
     boolean init = true;
 
@@ -73,6 +74,7 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         mContext = this;
+        errorDialogMsg = false;
         ConnectivityManager cm = (ConnectivityManager) mContext.getSystemService(Context.CONNECTIVITY_SERVICE);
 
         NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
@@ -131,11 +133,19 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
         mFab = (FloatingActionButton) findViewById(R.id.fab);
         mFab.setOnClickListener(new View.OnClickListener() {
             @Override public void onClick(View v) {
+
                 if (isConnected) {
+
+                    int inputHint = R.string.input_hint;
+                    if (errorDialogMsg) {
+                        inputHint = R.string.error_hint;
+                        errorDialogMsg = false;
+                    }
+
                     new MaterialDialog.Builder(mContext).title(R.string.symbol_search)
                             .content(R.string.content_test)
                             .inputType(InputType.TYPE_CLASS_TEXT)
-                            .input(R.string.input_hint, R.string.input_prefill, new MaterialDialog.InputCallback() {
+                            .input(inputHint, R.string.input_prefill, new MaterialDialog.InputCallback() {
                                 @Override public void onInput(MaterialDialog dialog, CharSequence input) {
                                     // On FAB click, receive user input. Make sure the stock doesn't already exist
                                     // in the DB and proceed accordingly
@@ -320,6 +330,8 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
 
             String tag = intent.getStringExtra(RECEIVER_TAG);
 
+            Log.v(LOG_TAG, "TaskReceiver tag: " + tag);
+
             switch (tag) {
                 case HistoLineData.HISTO_TAG:
 
@@ -339,8 +351,15 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
                     break;
                 case BAD_STOCK_TAG:
 
+                    String badStock = intent.getStringExtra(BAD_STOCK_TAG);
+
+                    errorDialogMsg = true;
+
+                    // Reopen the dialog to prompt the user to enter in another stock.
+                    mFab.performClick();
 
 
+                    Snackbar.make(mRecyclerView, "Stock " + badStock + " was invalid. Please try again.", Snackbar.LENGTH_LONG).show();
                     break;
                 default:
                     Log.e(LOG_TAG, "Unknown tag: " + tag);

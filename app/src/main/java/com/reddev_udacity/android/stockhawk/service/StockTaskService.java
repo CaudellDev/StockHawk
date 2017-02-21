@@ -1,4 +1,4 @@
-package com.sam_chordas.android.stockhawk.service;
+package com.reddev_udacity.android.stockhawk.service;
 
 import android.content.ContentValues;
 import android.content.Context;
@@ -13,15 +13,14 @@ import android.util.Log;
 import com.google.android.gms.gcm.GcmNetworkManager;
 import com.google.android.gms.gcm.GcmTaskService;
 import com.google.android.gms.gcm.TaskParams;
-import com.sam_chordas.android.stockhawk.data.QuoteColumns;
-import com.sam_chordas.android.stockhawk.data.QuoteProvider;
-import com.sam_chordas.android.stockhawk.graph.HistoLineData;
-import com.sam_chordas.android.stockhawk.rest.Utils;
-import com.sam_chordas.android.stockhawk.ui.MyStocksActivity;
+import com.reddev_udacity.android.stockhawk.data.QuoteColumns;
+import com.reddev_udacity.android.stockhawk.data.QuoteProvider;
+import com.reddev_udacity.android.stockhawk.graph.HistoLineData;
+import com.reddev_udacity.android.stockhawk.rest.Utils;
+import com.reddev_udacity.android.stockhawk.ui.MyStocksActivity;
 import com.squareup.okhttp.OkHttpClient;
 import com.squareup.okhttp.Request;
 import com.squareup.okhttp.Response;
-import com.squareup.okhttp.internal.Util;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -189,9 +188,12 @@ public class StockTaskService extends GcmTaskService {
                     // We want to check if the stock is valid.
                     // If it's not, we need to tell the activity and tell the user.
                     if (!Utils.isJsonValid(getResponse)) {
-                        sendMessageToActivity(params.getExtras().getString(StockIntentService.INTENT_SYMBOL), usedTag);
+                        String stock = params.getExtras().getString(StockIntentService.INTENT_SYMBOL);
+                        Utils.log5(LOG_TAG, "Stock entered is invalid. Cannot find: " + stock);
+                        sendMessageToActivity(stock, usedTag);
                         return result;
                     }
+                    Log.v(LOG_TAG, "Stock entered is valid.");
                 }
 
                 if (usedTag.equals("detail")) {
@@ -243,6 +245,9 @@ public class StockTaskService extends GcmTaskService {
 //        Intent intent = new Intent("StockClicked");
 //        intent.putExtra("stock_clicked", stock);
 
+
+        Log.e(LOG_TAG, "Message to Activity - TAG: " + tag);
+
         Intent intent = new Intent(MyStocksActivity.TaskReceiver.RECEIVER_TAG);
 
         switch (tag) {
@@ -255,7 +260,6 @@ public class StockTaskService extends GcmTaskService {
                 intent.putExtra(HistoLineData.HISTO_TAG, msg);
                 break;
             default:
-                Log.e(LOG_TAG, "Message to Activity - TAG: " + tag);
         }
 
 
