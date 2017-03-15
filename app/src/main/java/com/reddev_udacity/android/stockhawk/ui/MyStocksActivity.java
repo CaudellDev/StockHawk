@@ -24,6 +24,7 @@ import android.util.Log;
 import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
@@ -47,6 +48,8 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
     private static final String LOG_TAG = MyStocksActivity.class.getSimpleName();
 
     public static final String BAD_STOCK_TAG = "bad_stock_broadcast";
+
+    public static final String ACTION_DATA_UPDATED = "com.reddev_udacity.android.stockhawk.ACTION_DATA_UPDATED";
 
     /**
      * Fragment managing the behaviors, interactions and presentation of the navigation drawer.
@@ -75,11 +78,13 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
         super.onCreate(savedInstanceState);
         mContext = this;
         errorDialogMsg = false;
-        ConnectivityManager cm = (ConnectivityManager) mContext.getSystemService(Context.CONNECTIVITY_SERVICE);
 
+        ConnectivityManager cm = (ConnectivityManager) mContext.getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
         isConnected = activeNetwork != null && activeNetwork.isConnectedOrConnecting();
+
         setContentView(R.layout.activity_my_stocks);
+
         // The intent service is for executing immediate pulls from the Yahoo API
         // GCMTaskService can only schedule tasks, they cannot execute immediately
         mServiceIntent = new Intent(this, StockIntentService.class);
@@ -210,10 +215,13 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
         LocalBroadcastManager.getInstance(this).registerReceiver(mTaskReceiver, new IntentFilter(TaskReceiver.RECEIVER_TAG));
     }
 
-
     @Override
     public void onResume() {
         super.onResume();
+        // Recheck for network in case it changed
+        ConnectivityManager cm = (ConnectivityManager) mContext.getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
+        isConnected = activeNetwork != null && activeNetwork.isConnectedOrConnecting();
         getLoaderManager().restartLoader(CURSOR_LOADER_ID, null, this);
     }
 
@@ -265,6 +273,11 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
         actionBar.setTitle(mTitle);
     }
 
+    private void updateWidgets() {
+        Intent dataUpdatedIntent = new Intent(ACTION_DATA_UPDATED).setPackage(this.getPackageName());
+        sendBroadcast(dataUpdatedIntent);
+    }
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.my_stocks, menu);
@@ -288,6 +301,7 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
             // this is for changing stock changes from percent value to dollar value
             Utils.showPercent = !Utils.showPercent;
             this.getContentResolver().notifyChange(QuoteProvider.Quotes.CONTENT_URI, null);
+            updateWidgets();
         }
 
         return super.onOptionsItemSelected(item);
@@ -300,7 +314,7 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
         // This narrows the return to only the stocks that are most current.
         return new CursorLoader(this, QuoteProvider.Quotes.CONTENT_URI,
                                 new String[]{ QuoteColumns._ID, QuoteColumns.SYMBOL, QuoteColumns.BIDPRICE,
-                                QuoteColumns.PERCENT_CHANGE, QuoteColumns.CHANGE, QuoteColumns.ISUP},
+                                              QuoteColumns.PERCENT_CHANGE, QuoteColumns.CHANGE, QuoteColumns.ISUP},
                                 QuoteColumns.ISCURRENT + " = ?",
                                 new String[]{"1"},
                                 null);
@@ -311,6 +325,10 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
         Log.v(LOG_TAG, "onLoadFinished - data: " + data);
 
         mCursorAdapter.swapCursor(data);
+
+
+        updateWidgets();
+
         mCursor = data;
     }
 
@@ -373,5 +391,4 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
             // Start Detail Activity
         }
     }
-
 }

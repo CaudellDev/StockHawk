@@ -25,6 +25,11 @@ import com.squareup.okhttp.Response;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.GregorianCalendar;
+import java.util.Locale;
 
 /**
  * Created by sam_chordas on 9/30/15.
@@ -145,10 +150,17 @@ public class StockTaskService extends GcmTaskService {
             case "detail":
                 usedApi = URL_HISTORY;
                 usedSymbol = "(\"" + params.getExtras().getString(StockIntentService.INTENT_SYMBOL) + "\")";
+                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.ENGLISH);
 
-                // TODO: Get actual dates
-                usedStDate = URL_STDATE + "\"" + "2016-11-01" + "\"";
-                usedEnDate = URL_ENDATE + "\"" + "2016-12-31" + "\"";
+                Calendar cal = GregorianCalendar.getInstance();
+                cal.setTime(new Date());
+                cal.add(Calendar.DAY_OF_YEAR, -30); // 30 days from now
+                Date startDate = cal.getTime();
+                usedStDate = URL_STDATE + "\"" + sdf.format(startDate) + "\"";
+
+                Date currDate = new Date(System.currentTimeMillis());
+                usedEnDate = URL_ENDATE + "\"" + sdf.format(currDate) + "\"";
+
                 break;
             default:
                 if (usedTag.isEmpty()) usedTag = "<empty>";

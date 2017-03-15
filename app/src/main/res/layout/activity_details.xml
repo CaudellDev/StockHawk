@@ -49,7 +49,7 @@
             android:textColor="@color/grey"
             android:contentDescription="@string/a11y_stock_symbol"
             android:layout_columnWeight="1"
-            android:layout_gravity="fill"
+            android:layout_gravity="end"
             android:layout_rowWeight="1"/>
 
         <TextView
@@ -76,9 +76,10 @@
         <TextView
             android:id="@+id/detail_volume_value"
             android:layout_height="wrap_content"
+            android:textAlignment="center"
             android:gravity="center_vertical"
             android:textColor="@color/grey"
-            android:layout_gravity="fill"
+            android:layout_gravity="end"
             android:textAppearance="@style/TextAppearance.AppCompat.Headline"
             android:text="Mute"/>
 
