@@ -5,6 +5,7 @@ import android.graphics.Color;
 import android.os.Bundle;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.widget.TextView;
 
 import com.jjoe64.graphview.DefaultLabelFormatter;
@@ -25,6 +26,8 @@ import java.util.Locale;
  */
 
 public class StocksDetailActivity extends AppCompatActivity {
+
+    private static final String LOG_TAG = StocksDetailActivity.class.getSimpleName();
 
     private ArrayList<HistoPointData> dailyData;
     private HistoPointData present;
@@ -49,7 +52,6 @@ public class StocksDetailActivity extends AppCompatActivity {
         }
 
         dailyData = new ArrayList<>();
-        present = dataIterator.next();
 
         // I need to save this info for later, too.
         while (dataIterator.hasNext()) {
@@ -58,6 +60,9 @@ public class StocksDetailActivity extends AppCompatActivity {
         }
 
         Collections.reverse(dailyData);
+        present = dailyData.get(0);
+
+        Log.v(LOG_TAG, "onCreate, present data: " + present);
 
         String stock = present.getSymbol();
         String close = "$" + present.getClose();
