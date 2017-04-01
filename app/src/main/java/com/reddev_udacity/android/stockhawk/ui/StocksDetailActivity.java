@@ -79,7 +79,7 @@ public class StocksDetailActivity extends AppCompatActivity {
         volumeLabel.setContentDescription(getString(R.string.volume_desc, volume));
 
         TextView symbolView = (TextView) findViewById(R.id.detail_stock);
-        symbolView.setText(stock);
+        symbolView.setText(stock.toUpperCase());
         symbolView.setContentDescription(getString(R.string.stock_desc, stock));
 
         TextView valueView = (TextView) findViewById(R.id.detail_value);
