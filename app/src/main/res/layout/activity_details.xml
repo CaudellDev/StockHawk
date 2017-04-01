@@ -19,59 +19,61 @@
         <TextView
             android:id="@+id/detail_stock_label"
             android:layout_height="wrap_content"
-            android:text="@string/string_stock_label"
             android:gravity="center_vertical"
-            android:textAppearance="@style/TextAppearance.AppCompat.Title"
-            android:textColor="@color/grey"
+            android:layout_gravity="fill"
             android:contentDescription="@string/a11y_stock_symbol"
             android:layout_columnWeight="1"
-            android:layout_gravity="fill"
-            android:layout_rowWeight="1"/>
+            android:layout_rowWeight="1"
+
+            android:text="@string/string_stock_label"
+            android:textAppearance="@style/TextAppearance.AppCompat.Title"
+            android:textColor="@color/grey"/>
 
         <TextView
             android:id="@+id/detail_stock"
             android:layout_height="wrap_content"
-            android:text="@string/string_stock_name_default"
             android:gravity="center_vertical"
-            android:textAppearance="@style/TextAppearance.AppCompat.Headline"
-            android:textColor="@color/grey"
-            android:contentDescription="@string/a11y_stock_symbol"
-            android:layout_columnWeight="1"
             android:layout_gravity="fill"
-            android:layout_rowWeight="1"/>
+            android:layout_columnWeight="1"
+            android:layout_rowWeight="1"
+            android:contentDescription="@string/a11y_stock_symbol"
+
+            android:textAppearance="@style/TextAppearance.AppCompat.Headline"
+            android:textColor="@color/grey"/>
 
         <TextView
             android:id="@+id/detail_value_label"
             android:layout_height="wrap_content"
-            android:text="@string/string_value_label"
             android:gravity="center_vertical"
-            android:textAppearance="@style/TextAppearance.AppCompat.Title"
-            android:textColor="@color/grey"
             android:contentDescription="@string/a11y_stock_symbol"
             android:layout_columnWeight="1"
-            android:layout_gravity="end"
-            android:layout_rowWeight="1"/>
+            android:layout_gravity="start"
+            android:layout_rowWeight="1"
+
+            android:text="@string/string_value_label"
+            android:textAppearance="@style/TextAppearance.AppCompat.Title"
+            android:textColor="@color/grey"/>
 
         <TextView
             android:id="@+id/detail_value"
             android:layout_height="wrap_content"
-            android:text="@string/string_value_default"
             android:gravity="center_vertical"
             android:textAppearance="@style/TextAppearance.AppCompat.Headline"
             android:textColor="@color/grey"
             android:contentDescription="@string/a11y_stock_symbol"
             android:layout_columnWeight="1"
-            android:layout_gravity="fill"
+            android:layout_gravity="start"
             android:layout_rowWeight="1"/>
         
         <TextView
             android:id="@+id/detail_volume_label"
             android:layout_height="wrap_content"
             android:gravity="center_vertical"
-            android:textColor="@color/grey"
             android:layout_gravity="fill"
-            android:textAppearance="@style/TextAppearance.AppCompat.Title"
-            android:text="Volume: "/>
+
+            android:text="@string/volume_label"
+            android:textColor="@color/grey"
+            android:textAppearance="@style/TextAppearance.AppCompat.Title"/>
 
         <TextView
             android:id="@+id/detail_volume_value"
@@ -79,16 +81,10 @@
             android:textAlignment="center"
             android:gravity="center_vertical"
             android:textColor="@color/grey"
-            android:layout_gravity="end"
-            android:textAppearance="@style/TextAppearance.AppCompat.Headline"
-            android:text="Mute"/>
+            android:layout_gravity="start"
+            android:textAppearance="@style/TextAppearance.AppCompat.Headline"/>
 
     </GridLayout>
-
-    <!--<View-->
-        <!--android:layout_width="match_parent"-->
-        <!--android:layout_height="match_parent"-->
-        <!--android:background="#FF0000"/>-->
 
     <FrameLayout
         android:layout_width="match_parent"

@@ -17,10 +17,6 @@ import com.reddev_udacity.android.stockhawk.data.QuoteDatabase;
 import com.reddev_udacity.android.stockhawk.data.QuoteProvider;
 import com.reddev_udacity.android.stockhawk.rest.Utils;
 
-/**
- * Created by Tyler on 2/22/2017.
- */
-
 public class StockWidgetRemoteViewService extends RemoteViewsService {
 
     private static final String LOG_TAG = StockWidgetRemoteViewService.class.getSimpleName();
@@ -107,6 +103,12 @@ public class StockWidgetRemoteViewService extends RemoteViewsService {
 //                // Need to change color when negative.
 
                 String stock_symbol = data.getString(INDEX_STOCK_SYMBOL);
+
+                // This will help formatting and alignments a little bit.
+//                if (stock_symbol.length() == 3) stock_symbol += " ";
+//                if (stock_symbol.length() == 2) stock_symbol += "  ";
+//                if (stock_symbol.length() == 1) stock_symbol += "   ";
+
                 String stock_price = data.getString(INDEX_STOCK_BIDPRICE);
                 String stock_change = data.getString(INDEX_STOCK_CHANGE);
                 String stock_change_percent = data.getString(INDEX_STOCK_PERCENT_CHANGE);
@@ -123,16 +125,14 @@ public class StockWidgetRemoteViewService extends RemoteViewsService {
                 }
 
                 if (Utils.showPercent) {
-                    views.setTextViewText(R.id.change, stock_change_percent);
+                    views.setTextViewText(R.id.change, stock_change_percent + " "); // Space for aesthetic
                     description = getString(R.string.a11y_stock_summary, stock_symbol, stock_price, stock_change_percent);
                 } else {
-                    views.setTextViewText(R.id.change, stock_change);
+                    views.setTextViewText(R.id.change, stock_change.trim() + " "); // Space for aesthetic
                     description = getString(R.string.a11y_stock_summary, stock_symbol, stock_price, stock_change);
                 }
 
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH_MR1) {
-                    setRemoteContentDescription(views, description);
-                }
+                setRemoteContentDescription(views, description);
 
                 return views;
             }

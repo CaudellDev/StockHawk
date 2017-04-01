@@ -11,6 +11,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.text.DateFormat;
+import java.text.NumberFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Locale;
@@ -93,6 +94,17 @@ public class HistoPointData implements DataPointInterface, Parcelable {
     public String getClose() { return close; }
     public String getVolume() { return volume; }
     public String getAdjClose() { return adj_close; }
+
+    @Override
+    public String toString() {
+
+        NumberFormat nf = NumberFormat.getCurrencyInstance();
+        Double close_val = Double.parseDouble(close);
+
+        String close_curr = nf.format(close_val);
+
+        return "[ " + date + ", " + close_curr + "]";
+    }
     
     // #####--- Parcel Stuff ---#####
 

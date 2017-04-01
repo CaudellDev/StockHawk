@@ -10,9 +10,12 @@ import android.content.Loader;
 import android.database.Cursor;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.support.v4.app.DialogFragment;
 import android.support.v4.content.LocalBroadcastManager;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.app.ActionBar;
 import android.os.Bundle;
@@ -52,10 +55,6 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
     public static final String ACTION_DATA_UPDATED = "com.reddev_udacity.android.stockhawk.ACTION_DATA_UPDATED";
 
     /**
-     * Fragment managing the behaviors, interactions and presentation of the navigation drawer.
-     */
-
-    /**
      * Used to store the last screen title. For use in {@link #restoreActionBar()}.
      */
     private CharSequence mTitle;
@@ -66,7 +65,9 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
     private QuoteCursorAdapter mCursorAdapter;
     private Context mContext;
     private Cursor mCursor;
+    private MenuItem mItem;
     private boolean errorDialogMsg;
+    private boolean details_started;
     boolean isConnected;
     boolean init = true;
 
@@ -78,6 +79,7 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
         super.onCreate(savedInstanceState);
         mContext = this;
         errorDialogMsg = false;
+        details_started = false;
 
         ConnectivityManager cm = (ConnectivityManager) mContext.getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
@@ -151,7 +153,7 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
                             .content(R.string.content_test)
                             .inputType(InputType.TYPE_CLASS_TEXT)
                             .input(inputHint, R.string.input_prefill, new MaterialDialog.InputCallback() {
-                                @Override public void onInput(MaterialDialog dialog, CharSequence input) {
+                                @Override public void onInput(@NonNull MaterialDialog dialog, CharSequence input) {
                                     // On FAB click, receive user input. Make sure the stock doesn't already exist
                                     // in the DB and proceed accordingly
                                     Cursor c = getContentResolver().query(QuoteProvider.Quotes.CONTENT_URI,
@@ -159,21 +161,20 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
                                                                         new String[] { input.toString() }, null);
 
                                     if (c.getCount() != 0) {
-                                        Toast toast =
-                                        Toast.makeText(MyStocksActivity.this, "This stock is already saved!",
-                                        Toast.LENGTH_LONG);
+                                        Toast toast = Toast.makeText(MyStocksActivity.this, "This stock is already saved!", Toast.LENGTH_LONG);
                                         toast.setGravity(Gravity.CENTER, Gravity.CENTER, 0);
                                         toast.show();
-                                        return;
                                     } else {
                                         // Add the stock to DB
                                         mServiceIntent.putExtra("tag", "add");
                                         mServiceIntent.putExtra("symbol", input.toString());
                                         startService(mServiceIntent);
                                     }
+
+                                    c.close();
                                 }
-                    })
-                    .show();
+                    }).show();
+
                 } else {
                     // Empty view code here
                     noNetworkToast();
@@ -217,12 +218,15 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
 
     @Override
     public void onResume() {
+        Log.v(LOG_TAG, "onResume!");
+
         super.onResume();
         // Recheck for network in case it changed
         ConnectivityManager cm = (ConnectivityManager) mContext.getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
         isConnected = activeNetwork != null && activeNetwork.isConnectedOrConnecting();
         getLoaderManager().restartLoader(CURSOR_LOADER_ID, null, this);
+        details_started = false;
     }
 
     public void noNetworkView() {
@@ -282,6 +286,43 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.my_stocks, menu);
         restoreActionBar();
+
+        for (int i = 0; i < menu.size(); i++) {
+            if (menu.getItem(i).getItemId() == R.id.action_change_units) {
+                mItem = menu.getItem(i);
+                break;
+            }
+        }
+
+        updateMenuItemDesc();
+
+//        MenuItem item;
+//
+//        for (int i = 0; i < menu.size(); i++) {
+//            item = menu.getItem(i);
+//            if (item.getItemId() == R.id.action_change_units) {
+//                View actionView = new View(mContext);
+//
+//                if (actionView != null) {
+//                    String current = Utils.showPercent ? "Percent" : "Value";
+//                    String other = Utils.showPercent ? "Value" : "Percent";
+//                    String desc = "Change units. Currently " + current + ", change to " + other + ".";
+//
+//                    actionView.setContentDescription(desc);
+//                    item.setActionView(actionView);
+//                } else {
+//                    Log.e(LOG_TAG, "Change Units Item ActionView is null.");
+//                }
+//
+//
+//                item.setVisible(true); // I never want to see the ActionView, I only want it for the content description.
+//                item.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
+//                restoreActionBar();
+//
+//                break;
+//            }
+//        }
+
         return true;
     }
 
@@ -298,10 +339,14 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
         }
 
         if (id == R.id.action_change_units){
+            Log.v(LOG_TAG, "onOptionsItemSelected - Change Units selected.");
+
             // this is for changing stock changes from percent value to dollar value
             Utils.showPercent = !Utils.showPercent;
             this.getContentResolver().notifyChange(QuoteProvider.Quotes.CONTENT_URI, null);
             updateWidgets();
+
+            updateMenuItemDesc();
         }
 
         return super.onOptionsItemSelected(item);
@@ -364,7 +409,11 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
                     // Testing activity launch and sending info
                     Intent details = new Intent(context, StocksDetailActivity.class);
                     details.putExtra(HistoLineData.HISTO_TAG, extra);
-                    startActivity(details);
+
+                    if (!details_started) {
+                        details_started = true;
+                        startActivity(details);
+                    }
 
                     break;
                 case BAD_STOCK_TAG:
@@ -381,14 +430,19 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
                     break;
                 default:
                     Log.e(LOG_TAG, "Unknown tag: " + tag);
-                    return;
             }
-
-
-            
-            // Get JSON data
-            // Parse JSON data?
-            // Start Detail Activity
         }
+    }
+
+    private void updateMenuItemDesc() {
+        String desc;
+
+        if (Utils.showPercent) {
+            desc = "Change Units. Currently percent, change to value.";
+        } else {
+            desc = "Change Units. Currently value, change to percent.";
+        }
+
+        mItem.setTitle(desc);
     }
 }

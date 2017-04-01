@@ -179,7 +179,4 @@ public class Utils {
         for (int i = 0; i < 5; i ++) Log.v(TAG, "--|");
         Log.v(TAG, MSG);
     }
-
-    public static void logJson(String TAG, String MSG, String JSON) {
-    }
 }
