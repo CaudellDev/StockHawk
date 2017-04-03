@@ -152,7 +152,7 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
                     new MaterialDialog.Builder(mContext).title(R.string.symbol_search)
                             .content(R.string.content_test)
                             .inputType(InputType.TYPE_CLASS_TEXT)
-                            .input(inputHint, R.string.input_prefill, new MaterialDialog.InputCallback() {
+                            .input(inputHint, 0, new MaterialDialog.InputCallback() {
                                 @Override public void onInput(@NonNull MaterialDialog dialog, CharSequence input) {
                                     // On FAB click, receive user input. Make sure the stock doesn't already exist
                                     // in the DB and proceed accordingly
@@ -295,33 +295,6 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
         }
 
         updateMenuItemDesc();
-
-//        MenuItem item;
-//
-//        for (int i = 0; i < menu.size(); i++) {
-//            item = menu.getItem(i);
-//            if (item.getItemId() == R.id.action_change_units) {
-//                View actionView = new View(mContext);
-//
-//                if (actionView != null) {
-//                    String current = Utils.showPercent ? "Percent" : "Value";
-//                    String other = Utils.showPercent ? "Value" : "Percent";
-//                    String desc = "Change units. Currently " + current + ", change to " + other + ".";
-//
-//                    actionView.setContentDescription(desc);
-//                    item.setActionView(actionView);
-//                } else {
-//                    Log.e(LOG_TAG, "Change Units Item ActionView is null.");
-//                }
-//
-//
-//                item.setVisible(true); // I never want to see the ActionView, I only want it for the content description.
-//                item.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
-//                restoreActionBar();
-//
-//                break;
-//            }
-//        }
 
         return true;
     }
