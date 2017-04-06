@@ -152,6 +152,7 @@ public class StockTaskService extends GcmTaskService {
                 usedSymbol = "(\"" + stockInput + "\")";
                 break;
             case "detail":
+                isUpdate = false;
                 usedApi = URL_HISTORY;
                 usedSymbol = "(\"" + params.getExtras().getString(StockIntentService.INTENT_SYMBOL) + "\")";
                 SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.ENGLISH);
@@ -207,9 +208,9 @@ public class StockTaskService extends GcmTaskService {
                         String stock = params.getExtras().getString(StockIntentService.INTENT_SYMBOL);
 //                        Utils.log5(LOG_TAG, "Stock entered is invalid. Cannot find: " + stock);
                         sendMessageToActivity(MyStocksActivity.BAD_STOCK_NOTFOUND_TAG, stock);
-                        return result;
+                        return GcmNetworkManager.RESULT_FAILURE;
                     }
-//                    Log.v(LOG_TAG, "Stock entered is valid.");
+                    Log.v(LOG_TAG, "Stock entered is valid.");
                 }
 
                 if (usedTag.equals("detail")) {
