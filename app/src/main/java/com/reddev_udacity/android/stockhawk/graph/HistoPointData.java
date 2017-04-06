@@ -30,8 +30,8 @@ public class HistoPointData implements DataPointInterface, Parcelable {
     private String adj_close;
     
     public HistoPointData(JSONObject data) {
-        Utils.log5(LOG_TAG, "HistoPointData String: " + data);
-        Log.v(LOG_TAG, "Json is null: " + (data == null));
+//        Utils.log5(LOG_TAG, "HistoPointData String: " + data);
+//        Log.v(LOG_TAG, "Json is null: " + (data == null));
 
         try {
             symbol = data.getString("Symbol");
@@ -122,7 +122,7 @@ public class HistoPointData implements DataPointInterface, Parcelable {
          out.writeString(volume);
          out.writeString(adj_close);
 
-         Log.v(LOG_TAG, "writeToParcel, getX: " + getX());
+//         Log.v(LOG_TAG, "writeToParcel, getX: " + getX());
      }
 
      public static final Parcelable.Creator<HistoPointData> CREATOR = new Parcelable.Creator<HistoPointData>() {
@@ -145,6 +145,6 @@ public class HistoPointData implements DataPointInterface, Parcelable {
          volume = in.readString();
          adj_close = in.readString();
 
-         Log.v(LOG_TAG, "From parcel, getX: " + getX());
+//         Log.v(LOG_TAG, "From parcel, getX: " + getX());
      }
 }

@@ -93,8 +93,8 @@ public class QuoteCursorAdapter extends CursorRecyclerViewAdapter<QuoteCursorAda
         deletedSymbolPos = position;
 
 
-        Snackbar snackbar = Snackbar.make(rv, "You deleted " + symbol + ".", Snackbar.LENGTH_LONG)
-                                    .setAction("UNDO", this);
+        Snackbar snackbar = Snackbar.make(rv, mContext.getString(R.string.adapter_undo_snack_action_msg, symbol), Snackbar.LENGTH_LONG)
+                                    .setAction(mContext.getString(R.string.adapter_undo_snack_action_btn), this);
 
         snackbar.show();
 
@@ -107,7 +107,7 @@ public class QuoteCursorAdapter extends CursorRecyclerViewAdapter<QuoteCursorAda
 
     @Override
     public void onClick(View v) {
-        Log.d(LOG_TAG, "Snackbar callback function - UNDO button clicked for symbol: " + deletedSymbol);
+//        Log.d(LOG_TAG, "Snackbar callback function - UNDO button clicked for symbol: " + deletedSymbol);
 
         Intent intent = new Intent(mContext, StockIntentService.class);
         intent.putExtra("tag", "add");
@@ -142,7 +142,7 @@ public class QuoteCursorAdapter extends CursorRecyclerViewAdapter<QuoteCursorAda
 
         @Override
         public void onClick(View v) {
-            Log.i(LOG_TAG, "onClick -> " + v);
+//            Log.i(LOG_TAG, "onClick -> " + v);
         }
     }
 }

@@ -28,10 +28,6 @@ public class HistoLineData extends LineGraphSeries<HistoPointData> implements Pa
         HistoPointData[] array = new HistoPointData[dailyData.size()];
         array = dailyData.toArray(array);
 
-//        for (HistoPointData day : array) {
-//            Log.v(LOG_TAG, "getX: " + day.getX());
-//        }
-
         resetData(array);
     }
 
@@ -61,8 +57,6 @@ public class HistoLineData extends LineGraphSeries<HistoPointData> implements Pa
 
     private HistoLineData(Parcel in) {
         // Get an array, or loop and add each item
-//      mData = in.readInt();
-
         symbol = in.readString();
 
         ArrayList<HistoPointData> values = new ArrayList<>();
@@ -70,7 +64,7 @@ public class HistoLineData extends LineGraphSeries<HistoPointData> implements Pa
             HistoPointData val = in.readParcelable(HistoPointData.class.getClassLoader());
 
             if (val == null) break; // Parcel has a bunch of null elements for some reason - stop once that's reached.
-            Log.v(LOG_TAG, "Rebuilding HistoLineData Parcel. HistoPointData " + i + ", " + val.getX());
+//            Log.v(LOG_TAG, "Rebuilding HistoLineData Parcel. HistoPointData " + i + ", " + val.getX());
 
             values.add(val);
         }

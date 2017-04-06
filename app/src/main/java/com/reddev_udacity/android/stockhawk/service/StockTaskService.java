@@ -40,12 +40,6 @@ public class StockTaskService extends GcmTaskService {
 
     private String LOG_TAG = StockTaskService.class.getSimpleName();
 
-    public static final String DETAIL_SYMBOL = "detail_symbol";
-    public static final String TAG_EXTRA = "tag";
-    public static final String ADD_EXTRA = "add";
-    public static final String SYMBOL_EXTRA = "symbol";
-
-    
     private static final String URL_SEC = "https://";
     private static final String URL_INSEC = "http://";
     
@@ -145,6 +139,16 @@ public class StockTaskService extends GcmTaskService {
 
                 // get symbol from params.getExtra and build query
                 String stockInput = params.getExtras().getString("symbol");
+                if (stockInput == null) return GcmNetworkManager.RESULT_FAILURE;
+                stockInput = stockInput.toUpperCase();
+
+                // Check for special characters
+                if (!Utils.hasOnlyLetters(stockInput)) {
+//                    Log.e(LOG_TAG, "onRun - adding stock " + stockInput + " failed. Contains special characters.");
+                    sendMessageToActivity(MyStocksActivity.BAD_STOCK_INVALID_TAG, stockInput);
+                    return GcmNetworkManager.RESULT_FAILURE;
+                }
+
                 usedSymbol = "(\"" + stockInput + "\")";
                 break;
             case "detail":
@@ -164,7 +168,7 @@ public class StockTaskService extends GcmTaskService {
                 break;
             default:
                 if (usedTag.isEmpty()) usedTag = "<empty>";
-                Log.e(LOG_TAG, "This tag, " + usedTag + " was not recognized. Cannot complete the Task Service.");
+//                Log.e(LOG_TAG, "This tag, " + usedTag + " was not recognized. Cannot complete the Task Service.");
                 return GcmNetworkManager.RESULT_FAILURE;
         }
         
@@ -179,7 +183,7 @@ public class StockTaskService extends GcmTaskService {
                         .append((usedEnDate))
                         .append(URL_FORMAT).append((URL_DIAG)).append((URL_ENV)).append((URL_CALLBK));
         
-        Log.i(LOG_TAG, "urlStringBuilder = " + urlStringBuilder.toString());
+//        Log.i(LOG_TAG, "urlStringBuilder = " + urlStringBuilder.toString());
 
         String urlString;
         String getResponse;
@@ -193,27 +197,26 @@ public class StockTaskService extends GcmTaskService {
                 getResponse = fetchData(urlString);
                 result = GcmNetworkManager.RESULT_SUCCESS;
 
-                Log.i(LOG_TAG, "URL: " + urlString + "\n\n");
-                Log.i(LOG_TAG, "Get Response: " + getResponse);
+//                Log.i(LOG_TAG, "URL: " + urlString + "\n\n");
+//                Log.i(LOG_TAG, "Get Response: " + getResponse);
 
                 if (usedTag.equals("add")) {
                     // We want to check if the stock is valid.
                     // If it's not, we need to tell the activity and tell the user.
                     if (!Utils.isJsonValid(getResponse)) {
                         String stock = params.getExtras().getString(StockIntentService.INTENT_SYMBOL);
-                        Utils.log5(LOG_TAG, "Stock entered is invalid. Cannot find: " + stock);
-                        sendMessageToActivity(stock, usedTag);
+//                        Utils.log5(LOG_TAG, "Stock entered is invalid. Cannot find: " + stock);
+                        sendMessageToActivity(MyStocksActivity.BAD_STOCK_NOTFOUND_TAG, stock);
                         return result;
                     }
-                    Log.v(LOG_TAG, "Stock entered is valid.");
+//                    Log.v(LOG_TAG, "Stock entered is valid.");
                 }
 
                 if (usedTag.equals("detail")) {
                     // The ContentResolver doesn't need this data,
                     // the MainActivity needs it to launch the
                     // DetailActivity.
-                    sendMessageToActivity(getResponse, usedTag);
-//                    sendMessageToActivity(usedSymbol); // Send this for testing at first.
+                    sendMessageToActivity(HistoLineData.HISTO_TAG, getResponse);
                 } else {
                     try {
                         ContentValues contentValues = new ContentValues();
@@ -236,8 +239,6 @@ public class StockTaskService extends GcmTaskService {
         return result;
     }
 
-
-
     private String getQuoteUrl(String stock) {
         return "";
     }
@@ -251,41 +252,13 @@ public class StockTaskService extends GcmTaskService {
         return null;
     }
 
-    private void sendMessageToActivity(String msg, String tag) {
-//        Utils.log5(LOG_TAG, "sendMessageToActivity: " + json);
-
-//        Intent intent = new Intent("StockClicked");
-//        intent.putExtra("stock_clicked", stock);
-
-
-        Log.e(LOG_TAG, "Message to Activity - TAG: " + tag);
+    private void sendMessageToActivity(String tag, String msg) {
+//        Log.e(LOG_TAG, "Message to Activity - TAG: " + tag);
 
         Intent intent = new Intent(MyStocksActivity.TaskReceiver.RECEIVER_TAG);
-
-        switch (tag) {
-            case "add":
-                intent.putExtra(MyStocksActivity.TaskReceiver.RECEIVER_TAG, MyStocksActivity.BAD_STOCK_TAG);
-                intent.putExtra(MyStocksActivity.BAD_STOCK_TAG, msg);
-                break;
-            case "detail":
-                intent.putExtra(MyStocksActivity.TaskReceiver.RECEIVER_TAG, HistoLineData.HISTO_TAG);
-                intent.putExtra(HistoLineData.HISTO_TAG, msg);
-                break;
-            default:
-        }
-
-
-        Log.v(LOG_TAG, "Just before sending the Broadcast Receiver!!!!");
+        intent.putExtra(MyStocksActivity.TaskReceiver.RECEIVER_TAG, tag);
+        intent.putExtra(tag, msg);
 
         LocalBroadcastManager.getInstance(mContext).sendBroadcast(intent);
     }
-
-//    private void sendMessageToActivity(String json) {
-//        Utils.log5(LOG_TAG, "sendMessageToActivity: " + json);
-//
-//        Intent intent = new Intent("HistoricalDetailData");
-//        intent.putExtra(StockIntentService.INTENT_DETAIL, json);
-//
-//        LocalBroadcastManager.getInstance(mContext).sendBroadcast(intent);
-//    }
 }

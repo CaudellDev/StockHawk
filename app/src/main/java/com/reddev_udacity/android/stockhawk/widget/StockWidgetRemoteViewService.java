@@ -47,7 +47,7 @@ public class StockWidgetRemoteViewService extends RemoteViewsService {
 
             @Override
             public void onCreate() {
-                Log.v(LOG_TAG, "#######--- onCreate ---#######");
+//                Log.v(LOG_TAG, "#######--- onCreate ---#######");
             }
 
             @Override
@@ -79,13 +79,13 @@ public class StockWidgetRemoteViewService extends RemoteViewsService {
             @Override
             public int getCount() {
                 int count = data == null ? 0 : data.getCount();
-                Log.v(LOG_TAG, "getCount(): " + count);
+//                Log.v(LOG_TAG, "getCount(): " + count);
                 return count;
             }
 
             @Override
             public RemoteViews getViewAt(int index) {
-                Log.v(LOG_TAG, "#######--- RemoteViewsFactory: getViewAt (index = " + index + ") ---#######");
+//                Log.v(LOG_TAG, "#######--- RemoteViewsFactory: getViewAt (index = " + index + ") ---#######");
 
                 if (index == AdapterView.INVALID_POSITION || data == null || !data.moveToPosition(index)) {
                     return null;
@@ -93,22 +93,7 @@ public class StockWidgetRemoteViewService extends RemoteViewsService {
 
                 RemoteViews views = new RemoteViews(getPackageName(), R.layout.widget_list_item);
 
-//                String stock_symbol = data.getString(INDEX_STOCK_SYMBOL);
-//                String stock_change = data.getString(INDEX_STOCK_CHANGE);
-//
-//                Log.v(LOG_TAG, "Symbol, change: " + stock_symbol + ", " + stock_change);
-//
-//                views.setTextViewText(R.id.widget_item_stock, stock_symbol);
-//                views.setTextViewText(R.id.widget_item_change, stock_change);
-//                // Need to change color when negative.
-
                 String stock_symbol = data.getString(INDEX_STOCK_SYMBOL);
-
-                // This will help formatting and alignments a little bit.
-//                if (stock_symbol.length() == 3) stock_symbol += " ";
-//                if (stock_symbol.length() == 2) stock_symbol += "  ";
-//                if (stock_symbol.length() == 1) stock_symbol += "   ";
-
                 String stock_price = data.getString(INDEX_STOCK_BIDPRICE);
                 String stock_change = data.getString(INDEX_STOCK_CHANGE);
                 String stock_change_percent = data.getString(INDEX_STOCK_PERCENT_CHANGE);
@@ -137,74 +122,29 @@ public class StockWidgetRemoteViewService extends RemoteViewsService {
                 return views;
             }
 
-//            @Override
-//            public RemoteViews getViewAt(int position) {
-//                Log.v(LOG_TAG, "#######--- RemoteViewsFactory: getViewAt (index = " + position + ") ---#######");
-//
-//                if (position == AdapterView.INVALID_POSITION || data == null || !data.moveToPosition(position)) {
-//                    return null;
-//                }
-//
-//                RemoteViews views = new RemoteViews(getPackageName(), R.layout.list_item_quote);
-//
-//                String stock_symbol = data.getString(INDEX_STOCK_SYMBOL);
-//                String stock_price = data.getString(INDEX_STOCK_BIDPRICE);
-//                String stock_change = data.getString(INDEX_STOCK_CHANGE);
-//                String stock_change_percent = data.getString(INDEX_STOCK_PERCENT_CHANGE);
-//                String description;
-//
-//                views.setTextViewText(R.id.stock_symbol, stock_symbol);
-//                views.setTextViewText(R.id.bid_price, stock_price);
-//
-//                if (data.getInt(INDEX_STOCK_ISUP) == 1) {
-//                    views.setInt(R.id.change, "setBackgroundColor", Color.GREEN);
-//                } else {
-//                    views.setInt(R.id.change, "setBackgroundColor", Color.RED);
-//                }
-//
-//                if (Utils.showPercent) {
-//                    views.setTextViewText(R.id.change, stock_change_percent);
-//                    description = getString(R.string.a11y_stock_summary, stock_symbol, stock_price, stock_change_percent);
-//                } else {
-//                    views.setTextViewText(R.id.change, stock_change);
-//                    description = getString(R.string.a11y_stock_summary, stock_symbol, stock_price, stock_change);
-//                }
-//
-//                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH_MR1) {
-//                    setRemoteContentDescription(views, description);
-//                }
-//
-//                return views;
-//            }
-
             @TargetApi(Build.VERSION_CODES.ICE_CREAM_SANDWICH_MR1)
             private void setRemoteContentDescription(RemoteViews views, String description) {
-                Log.v(LOG_TAG, "onRemoteContentDescription() - description: " + description);
                 views.setContentDescription(R.id.stock_list_item, description);
             }
 
             @Override
             public RemoteViews getLoadingView() {
-                Log.v(LOG_TAG, "#### - getLoadingView()");
                 return new RemoteViews(getPackageName(), R.layout.widget_list_item);
             }
 
             @Override
             public int getViewTypeCount() {
-                Log.v(LOG_TAG, "onViewTypeCount()");
                 return 1;
             }
 
             @Override
             public long getItemId(int index) {
-                Log.v(LOG_TAG, "GetIdemId() - index: " + index);
                 if (data.moveToPosition(index)) return data.getLong(INDEX_STOCK_ID);
                 return index;
             }
 
             @Override
             public boolean hasStableIds() {
-                Log.v(LOG_TAG, "hasStableIds()");
                 return true;
             }
         };

@@ -27,8 +27,6 @@ public class Utils {
         JSONObject jsonObject;
         JSONArray resultsArray;
 
-
-
         try {
             jsonObject = new JSONObject(JSON);
             if (jsonObject.length() != 0) {
@@ -37,26 +35,13 @@ public class Utils {
 
                 if (count == 1) {
                     jsonObject = jsonObject.getJSONObject("results");
-
-
                     jsonObject = jsonObject.getJSONObject("quote");
                     batchOperations.add(buildBatchOperation(jsonObject));
-
-//                    Object queryTemp = jsonObject.get("query");
-//                    if (queryTemp instanceof JSONArray) {
-//                        historical = true;
-//
-//                        JSONArray queryArray = (JSONArray) queryTemp;
-//                    } else if (queryTemp instanceof JSONObject) {
-//
-//                        batchOperations.add(buildBatchOperation((JSONObject) queryTemp));
-//                    }
-
                 } else {
                     resultsArray = jsonObject.getJSONObject("results").getJSONArray("quote");
 
                     if (resultsArray != null && resultsArray.length() != 0) {
-                        Log.v(LOG_TAG, "JSON Array \"query\":" + resultsArray.toString());
+//                        Log.v(LOG_TAG, "JSON Array \"query\":" + resultsArray.toString());
 
                         for (int i = 0; i < resultsArray.length(); i++) {
                             jsonObject = resultsArray.getJSONObject(i);
@@ -124,7 +109,7 @@ public class Utils {
     }
     
     public static ArrayList<HistoPointData> parseHistoricalJson(String json) {
-        Log.v(LOG_TAG, "parseHistoricalJson data: " + json);
+//        Log.v(LOG_TAG, "parseHistoricalJson data: " + json);
         
         ArrayList<HistoPointData> dailyData = new ArrayList<>();
         
@@ -169,14 +154,29 @@ public class Utils {
             e.printStackTrace();
         }
 
-        Utils.log5(LOG_TAG, "isJsonValid - nulls: " + nulls + ", valid: " + (nulls <= 3));
+//        Utils.log5(LOG_TAG, "isJsonValid - nulls: " + nulls + ", valid: " + (nulls <= 3));
 
         // https://query.yahooapis.com/v1/public/yql?q=select+*+from+yahoo.finance.quotes+where+symbol+in+%28%22ddgj%22%29&format=json&diagnostics=true&env=store://datatables.org/alltableswithkeys&callback=
         return nulls <= 3; // If it's more than 3, it's probably an invalid stock. Will experiment with other values too.
     }
 
+    public static boolean hasOnlyLetters(String symbol) {
+
+        char[] temp = symbol.toCharArray();
+//        Log.v(LOG_TAG, "hasOnlyLetters - temp: " + temp);
+
+        for (char curr : temp) {
+//            Log.v(LOG_TAG, "hasOnlyLetters - curr: " + curr);
+            if (curr < 'A' || curr > 'Z') {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
     public static void log5(String TAG, String MSG) {
-        for (int i = 0; i < 5; i ++) Log.v(TAG, "--|");
-        Log.v(TAG, MSG);
+//        for (int i = 0; i < 5; i ++) Log.v(TAG, "--|");
+//        Log.v(TAG, MSG);
     }
 }

@@ -25,7 +25,7 @@ public class StockWidgetProvider extends AppWidgetProvider {
     private static final String LOG_TAG = StockWidgetProvider.class.getSimpleName();
 
     public void updateAppWidget(Context context, AppWidgetManager appWidgetManager, int appWidgetId) {
-        Log.v(LOG_TAG, "updateAppWidget: id = " + appWidgetId);
+//        Log.v(LOG_TAG, "updateAppWidget: id = " + appWidgetId);
 
         RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.stock_widget);
 
@@ -46,7 +46,7 @@ public class StockWidgetProvider extends AppWidgetProvider {
     @Override
     public void onUpdate(Context context, AppWidgetManager appWidgetManager, int[] appWidgetIds) {
 
-        Log.v(LOG_TAG, "onUpdate - id array length: " + (appWidgetIds == null ? 0 : appWidgetIds.length));
+//        Log.v(LOG_TAG, "onUpdate - id array length: " + (appWidgetIds == null ? 0 : appWidgetIds.length));
 
         // There may be multiple widgets active, so update all of them
         for (int appWidgetId : appWidgetIds) {
@@ -58,7 +58,7 @@ public class StockWidgetProvider extends AppWidgetProvider {
     public void onReceive(Context context, Intent intent) {
         super.onReceive(context, intent);
 
-        Log.v(LOG_TAG, "onRecieve - intent action: " + intent.getAction());
+//        Log.v(LOG_TAG, "onRecieve - intent action: " + intent.getAction());
 
         if (MyStocksActivity.ACTION_DATA_UPDATED.equals(intent.getAction())) {
 

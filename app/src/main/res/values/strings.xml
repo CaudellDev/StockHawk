@@ -10,7 +10,8 @@
     <string name="a11y_stock_symbol" translatable="false">Symbol is %1$s</string>
     <string name="input_hint" translatable="false">FB</string>
 
-    <string name="error_hint">Error, Stock not found. Try again.</string>
+    <string name="error_hint_not_found">Error, Stock %1$s not found. Try again.</string>
+    <string name="error_hint_special_char">Error, %1$s was invalid input. Try again.</string>
     <string name="input_prefill"></string>
     <string name="network_toast">Uh-oh! This app requires an internet connection</string>
     <string name="string_stock_label">Stock:</string>
@@ -26,4 +27,11 @@
     <string name="value_desc" translatable="false">Value is %1$s</string>
     <string name="volume_desc" translatable="false">Volume is %1$s</string>
     <string name="add_new_stock">Add New Stock</string>
+    <string name="stock_already_saved">This stock is already saved!</string>
+    <string name="network_conn_found">Network connection found!</string>
+    <string name="network_conn_not_found">No Network Connection found. Please try again.</string>
+    <string name="menu_change_units_cp">Change Units. Currently percent, change to value.</string>
+    <string name="menu_change_units_cv">Change Units. Currently value, change to percent.</string>
+    <string name="adapter_undo_snack_action_msg">You deleted %1$s.</string>
+    <string name="adapter_undo_snack_action_btn">UNDO</string>
 </resources>

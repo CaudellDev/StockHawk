@@ -50,7 +50,8 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
 
     private static final String LOG_TAG = MyStocksActivity.class.getSimpleName();
 
-    public static final String BAD_STOCK_TAG = "bad_stock_broadcast";
+    public static final String BAD_STOCK_NOTFOUND_TAG = "bad_stock_notfound_broadcast";
+    public static final String BAD_STOCK_INVALID_TAG = "bad_stock_invalid_broadcast";
 
     public static final String ACTION_DATA_UPDATED = "com.reddev_udacity.android.stockhawk.ACTION_DATA_UPDATED";
 
@@ -66,6 +67,8 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
     private Context mContext;
     private Cursor mCursor;
     private MenuItem mItem;
+    private String errorDialogBadStock;
+    private String errorDialogBadStockTag;
     private boolean errorDialogMsg;
     private boolean details_started;
     boolean isConnected;
@@ -114,13 +117,13 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
                 @Override public void onItemClick(View v, int position) {
                     //TODO:
                     // do something on item click
-                    Log.i(LOG_TAG, "RecyclerView onItemTouchListener - position: " + position);
+//                    Log.i(LOG_TAG, "RecyclerView onItemTouchListener - position: " + position);
 
                     mCursor.moveToPosition(position);
                     int columnIndex = mCursor.getColumnIndex(QuoteColumns.SYMBOL);
                     String symbol = mCursor.getString(columnIndex);
 
-                    Log.i(LOG_TAG, "You clicked on: " + symbol);
+//                    Log.i(LOG_TAG, "You clicked on: " + symbol);
 
                     // Start the service and create the new activity.
                     if (isConnected) {
@@ -143,25 +146,41 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
 
                 if (isConnected) {
 
-                    int inputHint = R.string.input_hint;
+                    String inputHint = getString(R.string.input_hint);
                     if (errorDialogMsg) {
-                        inputHint = R.string.error_hint;
+                        if (errorDialogBadStockTag.equals(MyStocksActivity.BAD_STOCK_NOTFOUND_TAG)) {
+                            inputHint = getString(R.string.error_hint_not_found, errorDialogBadStock);
+                        } else if (errorDialogBadStockTag.equals(MyStocksActivity.BAD_STOCK_INVALID_TAG)) {
+                            inputHint = getString(R.string.error_hint_special_char, errorDialogBadStock);
+                        }
+
                         errorDialogMsg = false;
                     }
 
                     new MaterialDialog.Builder(mContext).title(R.string.symbol_search)
                             .content(R.string.content_test)
                             .inputType(InputType.TYPE_CLASS_TEXT)
-                            .input(inputHint, 0, new MaterialDialog.InputCallback() {
+                            .input(inputHint, "", new MaterialDialog.InputCallback() {
                                 @Override public void onInput(@NonNull MaterialDialog dialog, CharSequence input) {
                                     // On FAB click, receive user input. Make sure the stock doesn't already exist
                                     // in the DB and proceed accordingly
+//                                    Cursor c = getContentResolver().query(QuoteProvider.Quotes.CONTENT_URI,
+//                                                                        new String[] { QuoteColumns.SYMBOL }, QuoteColumns.SYMBOL + "= ?",
+//                                                                        new String[] { input.toString() }, null);
+
                                     Cursor c = getContentResolver().query(QuoteProvider.Quotes.CONTENT_URI,
-                                                                        new String[] { QuoteColumns.SYMBOL }, QuoteColumns.SYMBOL + "= ?",
-                                                                        new String[] { input.toString() }, null);
+                                            new String[]{QuoteColumns.SYMBOL}, QuoteColumns.SYMBOL + "= ?",
+                                            new String[]{input.toString()}, null);
+
+                                    if (c != null) {
+                                        Log.d(LOG_TAG, "Cursor count: " + c.getCount());
+                                    } else {
+                                        Log.d(LOG_TAG, "Cursor is null");
+                                        return;
+                                    }
 
                                     if (c.getCount() != 0) {
-                                        Toast toast = Toast.makeText(MyStocksActivity.this, "This stock is already saved!", Toast.LENGTH_LONG);
+                                        Toast toast = Toast.makeText(MyStocksActivity.this, R.string.stock_already_saved, Toast.LENGTH_LONG);
                                         toast.setGravity(Gravity.CENTER, Gravity.CENTER, 0);
                                         toast.show();
                                     } else {
@@ -171,7 +190,7 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
                                         startService(mServiceIntent);
                                     }
 
-                                    c.close();
+//                                    c.close();
                                 }
                     }).show();
 
@@ -211,15 +230,12 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
         
         // Setup BroadcastReciever to get data from service
         // when user clicks on a Stock, and to launch new activity.
-        Utils.log5(LOG_TAG, "Just before registering the Broadcast Receiver!!!!");
         mTaskReceiver = new TaskReceiver();
         LocalBroadcastManager.getInstance(this).registerReceiver(mTaskReceiver, new IntentFilter(TaskReceiver.RECEIVER_TAG));
     }
 
     @Override
     public void onResume() {
-        Log.v(LOG_TAG, "onResume!");
-
         super.onResume();
         // Recheck for network in case it changed
         ConnectivityManager cm = (ConnectivityManager) mContext.getSystemService(Context.CONNECTIVITY_SERVICE);
@@ -248,11 +264,11 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
                 View coord_view = findViewById(R.id.stock_activity_coord_layout);
                 if (isConnected) {
                     connectedNetworkView();
-                    if (coord_view != null) Snackbar.make(coord_view, "Network connection found!", Snackbar.LENGTH_SHORT).show();
-                    else Log.e(LOG_TAG, "(Is Connected) Coordinator View is null! Oh no! :(");
+                    if (coord_view != null) Snackbar.make(coord_view, R.string.network_conn_found, Snackbar.LENGTH_SHORT).show();
+//                    else Log.e(LOG_TAG, "(Is Connected) Coordinator View is null! Oh no! :(");
                 } else {
-                    if (coord_view != null) Snackbar.make(coord_view, "No Network Connection found. Please try again.", Snackbar.LENGTH_SHORT).show();
-                    else Log.e(LOG_TAG, "(Not Connected) Coordinator View is null! Oh no! :(");
+                    if (coord_view != null) Snackbar.make(coord_view, R.string.network_conn_not_found, Snackbar.LENGTH_SHORT).show();
+//                    else Log.e(LOG_TAG, "(Not Connected) Coordinator View is null! Oh no! :(");
                 }
             }
         });
@@ -312,7 +328,7 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
         }
 
         if (id == R.id.action_change_units){
-            Log.v(LOG_TAG, "onOptionsItemSelected - Change Units selected.");
+//            Log.v(LOG_TAG, "onOptionsItemSelected - Change Units selected.");
 
             // this is for changing stock changes from percent value to dollar value
             Utils.showPercent = !Utils.showPercent;
@@ -327,7 +343,7 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
 
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-        Log.v(LOG_TAG, "onCreateLoader - args: " + args);
+//        Log.v(LOG_TAG, "onCreateLoader - args: " + args);
 
         // This narrows the return to only the stocks that are most current.
         return new CursorLoader(this, QuoteProvider.Quotes.CONTENT_URI,
@@ -340,7 +356,7 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
 
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor data){
-        Log.v(LOG_TAG, "onLoadFinished - data: " + data);
+//        Log.v(LOG_TAG, "onLoadFinished - data: " + data);
 
         mCursorAdapter.swapCursor(data);
 
@@ -352,7 +368,7 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
 
     @Override
     public void onLoaderReset(Loader<Cursor> loader){
-        Log.v(LOG_TAG, "onLoaderReset - loader: " + loader);
+//        Log.v(LOG_TAG, "onLoaderReset - loader: " + loader);
 
         mCursorAdapter.swapCursor(null);
     }
@@ -366,13 +382,13 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
 
             String tag = intent.getStringExtra(RECEIVER_TAG);
 
-            Log.v(LOG_TAG, "TaskReceiver tag: " + tag);
+//            Log.v(LOG_TAG, "TaskReceiver tag: " + tag);
 
             switch (tag) {
                 case HistoLineData.HISTO_TAG:
 
                     String data = intent.getStringExtra(HistoLineData.HISTO_TAG);
-                    Log.v(LOG_TAG, "onMessageRecived: " + data);
+//                    Log.v(LOG_TAG, "onMessageRecived: " + data);
 
                     HistoLineData histoLineData = new HistoLineData(data);
 
@@ -389,17 +405,16 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
                     }
 
                     break;
-                case BAD_STOCK_TAG:
+                case BAD_STOCK_NOTFOUND_TAG:
+                case BAD_STOCK_INVALID_TAG:
 
-                    String badStock = intent.getStringExtra(BAD_STOCK_TAG);
-
+                    errorDialogBadStock = intent.getStringExtra(tag);
+                    errorDialogBadStockTag = tag;
                     errorDialogMsg = true;
 
                     // Reopen the dialog to prompt the user to enter in another stock.
                     mFab.performClick();
 
-
-                    Snackbar.make(mRecyclerView, "Stock " + badStock + " was invalid. Please try again.", Snackbar.LENGTH_LONG).show();
                     break;
                 default:
                     Log.e(LOG_TAG, "Unknown tag: " + tag);
@@ -411,9 +426,9 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
         String desc;
 
         if (Utils.showPercent) {
-            desc = "Change Units. Currently percent, change to value.";
+            desc = getString(R.string.menu_change_units_cp);
         } else {
-            desc = "Change Units. Currently value, change to percent.";
+            desc = getString(R.string.menu_change_units_cv);
         }
 
         mItem.setTitle(desc);
